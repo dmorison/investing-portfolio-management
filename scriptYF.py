@@ -3,7 +3,7 @@ import pandas as pd
 
 transactions = pd.read_csv('transactions.csv')
 
-company = "LON:HSTN"
+company = "LON:BBOX"
 
 company_transactions = transactions[transactions['Ticker'] == company]
 # print(company_transactions)
@@ -31,7 +31,10 @@ ts_Total_cost_ave = ts['Total_cost_ave']
 # market data only necessary for first transaction
 market_data = yf.download(ts_Ticker, ts_Date)
 print(market_data.info())
-df = market_data[['Close']]
+if market_data.empty:
+	exit(ts_Ticker + ": No data found, symbol may be delisted")
+else:
+	df = market_data[['Close']]
 ##################################################
 
 def total_val_calc(x):
@@ -84,4 +87,8 @@ if len(company_transactions.index) > 1:
 print(df.info())
 print(df['Yield'].describe())
 
-df.to_csv('./company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
+# df.to_csv('./company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
+
+pf = df[['Cost', 'Profit']]
+print(pf.head())
+
