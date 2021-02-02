@@ -1,5 +1,6 @@
 import yfinance as yf
 import pandas as pd
+import numpy as np
 
 transactions = pd.read_csv('transactions.csv')
 
@@ -93,12 +94,14 @@ def build_company_datasets():
 			print(x)
 			build_data(x)
 
+num_companies = 0
 tickers = ["LON:LLOY", "LON:BBOX", "LON:MONY"]
 for indx, symbl in enumerate(tickers):
 	print(indx)
 	print(symbl)
 	global df
 	global pf
+	global num_companies
 	get_company_data(symbl)
 	build_company_datasets()
 
@@ -113,20 +116,47 @@ for indx, symbl in enumerate(tickers):
 		pf_cost_col_name = "Cost_" + symbl.split(':')[1]
 		pf_profit_col_name = "Profit_" + symbl.split(':')[1]
 		pf.columns = [pf_cost_col_name, pf_profit_col_name]
+		num_companies = 1
 	else:
 		pf_1 = df[['Cost', 'Profit']]
-		pf_1_rsuffix = "_" + symbl.split(':')[1]
-		print(pf_1_rsuffix)
-		pf = pf.join(pf_1, how="outer", rsuffix=pf_1_rsuffix)
-		# pf = pf.assign(Cost = pf['Cost'].fillna(0) + pf_1['Cost'].fillna(0))
-		# pf = pf.assign(Profit = pf['Profit'].fillna(0) + pf_1['Profit'].fillna(0))
-	
-	print(pf.head())
-	print(pf.tail())
-	print(pf.info())
+		pf_1_cost_col_name = "Cost_" + symbl.split(':')[1]
+		pf_1_profit_col_name = "Profit_" + symbl.split(':')[1]
+		pf_1.columns = [pf_1_cost_col_name, pf_1_profit_col_name]
+		pf = pf.join(pf_1, how="outer")
+		num_companies = num_companies + 1
 
-# pf = pf.assign(Total_cost = pf['Cost_'])
+print(num_companies)
+print(pf.head())
+print(pf.tail())
+print(pf.info())
 
-# companies = ["LON:LLOY", "LON:BBOX"]
-# for company in companies:
-# 	get_data(company)
+Cost_cols = []
+Profit_cols = []
+for x in range(0, num_companies):
+	cost_col_nums = x * 2
+	profit_col_nums = cost_col_nums + 1
+	Cost_cols += [cost_col_nums]
+	Profit_cols += [profit_col_nums]
+
+print(Cost_cols)
+print(Profit_cols)
+All_costs = pf.iloc[:, Cost_cols]
+All_profits = pf.iloc[:, Profit_cols]
+
+Total_cost = All_costs.sum(axis=1, skipna=True)
+Total_profit = All_profits.sum(axis=1, skipna=True)
+Performance = np.round_((Total_profit/Total_cost)*100,decimals=1)
+print(Total_cost.head(3))
+print(Total_cost.tail(3))
+print(Total_profit.head(3))
+print(Total_profit.tail(3))
+
+pf['Total_cost'] = Total_cost
+pf['Total_profit'] = Total_profit
+pf['Performance'] = Performance
+print(pf.head())
+print(pf.tail())
+
+Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
+print(Totals_df.head())
+print(Totals_df.tail())
