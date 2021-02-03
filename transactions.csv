@@ -1,5 +1,4 @@
 Date,Ticker,Company,Quantity,Cost_per_share_ave,Total_cost_ave
-2017-12-01,LON:JE,Just Eat,62,820.96,509
 2017-12-19,LON:HSV,Homeserve plc,63,804.38,506.76
 2018-02-16,LON:LLOY,Lloyds Banking Group PLC,738,68.05,502.23
 2018-04-19,LON:EXPN,Experian plc,38,1579.38,600.16
@@ -15,10 +14,8 @@ Date,Ticker,Company,Quantity,Cost_per_share_ave,Total_cost_ave
 2019-02-18,LON:BBOX,Tritax Big Box REIT PLC,182,147.6,807.38
 2019-03-27,LON:SYNT,Synthomer PLC,216,376.48,813.19
 2019-07-12,LON:MONY,Moneysupermarket.Com Group PLC,-394,287.6,2786.84
-2019-07-15,LON:HSTN,Hansteen,950,97.87,929.76
 2019-07-25,LON:SYNT,Synthomer PLC,54,349.18,942.79
 2019-08-08,LON:AV,Aviva plc,220,389.13,856.09
-2019-10-16,LON:HSTN,Hansteen,159,97.31,1079.16
 2019-10-16,LON:SYNT,Synthomer PLC,50,340.81,1090.6
 2019-10-16,LON:XPP,XP Power Ltd.,5,2453.91,1153.34
 2019-10-24,LON:PRU,Prudential plc,58,1447.08,839.3
@@ -37,7 +34,6 @@ Date,Ticker,Company,Quantity,Cost_per_share_ave,Total_cost_ave
 2020-01-15,LON:BBOX,Tritax Big Box REIT PLC,141,146.8,1614.76
 2020-01-15,LON:IEM,Impax Environmental Markets plc,59,333.76,797.69
 2020-01-15,LON:SMDS,DS Smith plc,54,396.58,1729.09
-2020-01-19,LON:HSTN,Hansteen,-1109,0,0
 2020-03-02,NYSE:MA,Mastercard Inc,4,23034.15,921.37
 2020-03-09,LON:JET,Just Eat Takeaway.com NV,7,7271.43,509
 2020-03-09,LON:LMP,Londonmetric Property PLC,389,208.139,809.66
