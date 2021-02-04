@@ -56,6 +56,7 @@ def get_company_data(xyz):
 	ts_Ticker = ticker(company) # get Yahoo Finance ticket/symbol for company
 	ts_Quantity = ts['Quantity']
 	ts_Total_cost_ave = ts['Total_cost_ave']
+	ts_Cost_per_share_ave = ts['Cost_per_share_ave']
 
 	print(ts_Date) #PRINT------------PRINT--------------PRINT#
 	# market data only necessary for first transaction
@@ -69,19 +70,20 @@ def get_company_data(xyz):
 	
 	if market(company) == "US":
 		date_loc = Exchange_rate.index.get_loc(ts_Date)
-		Exchange_rate = Exchange_rate.iloc[date_loc: , :]
-		df = df.join(Exchange_rate, how="outer")
+		Ex_rate_df = Exchange_rate.iloc[date_loc: , :]
+		init_ex_rate = Exchange_rate.loc[ts_Date, 'GBPUSD']
+		Ex_rate_df = Ex_rate_df.assign(Percent = Ex_rate_df['GBPUSD'].map(lambda x: ((x - init_ex_rate) / init_ex_rate) * 100))
+		df = df.join(Ex_rate_df, how="outer")
+		
 		df = df.assign(Market_value = df.apply(lambda x: us_total_val_calc(a = x['Close'], b = x['GBPUSD']), axis=1))
-		df = df.assign(Cost = df['GBPUSD'].map(lambda x: round(ts_Total_cost_ave / x, 2)))  # assign total cost to df column
+		df = df.assign(Cost = df['GBPUSD'].map(lambda x: np.round_((ts_Cost_per_share_ave * ts_Quantity) / x, decimals=2)))
 	else:
 		df = df.assign(Market_value = df['Close'].map(total_val_calc))  # calculate market value and assign column to df
 		df = df.assign(Cost = ts_Total_cost_ave)  # assign total cost to df column
 	
 	# need to check which is more accurate between two sets of calculations below
-	# df = df.assign(Profit = df['Market_value'] - df['Cost'])
-	# df = df.assign(Yield = np.round_((df['Profit'] / df['Cost'])*100, decimals=1))
-	df = df.assign(Profit = df['Market_value'].map(lambda x: round(x - ts_Total_cost_ave, 2)))  # calculate profit based on market value subtract total cost for each day and assign column to df
-	df = df.assign(Yield = df['Profit'].map(lambda x: round((x/ts_Total_cost_ave)*100, 1)))  # calculate percentage yield based on profit for each day and assign column to df
+	df = df.assign(Profit = df['Market_value'] - df['Cost'])  # calculate profit based on market value subtract total cost for each day and assign column to df
+	df = df.assign(Yield = np.round_((df['Profit'] / df['Cost'])*100, decimals=1))  # calculate percentage yield based on profit for each day and assign column to df
 
 # using all following transactions, break up initial df into chuncks to rebase calculations for each transactions and concatenate them back together
 def build_data(x):
@@ -95,6 +97,7 @@ def build_data(x):
 	ts_x_Date = ts_x['Date']
 	ts_Quantity = ts_Quantity + ts_x['Quantity']  # reset the initial ts_Quantity to use in total_val_calc function
 	ts_x_Total_cost_ave = ts_x['Total_cost_ave']
+	ts_x_Cost_per_share_ave = ts_x['Cost_per_share_ave']
 
 	df_x_loc = df.index.get_loc(ts_x_Date)  # get the location of the transaction from the initial df
 	# split the current df by the transaction date
@@ -104,16 +107,14 @@ def build_data(x):
 	# recalculate the the second dataframe based on the transaction
 	if market(company) == "US":
 		df_2 = df_2.assign(Market_value = df_2.apply(lambda x: us_total_val_calc(a = x['Close'], b = x['GBPUSD']), axis=1))
-		df_2 = df_2.assign(Cost = df['GBPUSD'].map(lambda x: round(ts_x_Total_cost_ave / x, 2)))
+		# df_2 = df_2.assign(Cost = df['GBPUSD'].map(lambda x: round(ts_x_Total_cost_ave / x, 2)))
+		df_2 = df_2.assign(Cost = df_2['GBPUSD'].map(lambda x: np.round_((ts_x_Cost_per_share_ave * ts_Quantity) / x, decimals=2)))
 	else:
 		df_2 = df_2.assign(Market_value = df_2['Close'].map(total_val_calc))
 		df_2 = df_2.assign(Cost = ts_x_Total_cost_ave)
 
-	# need to check which is more accurate between two sets of calculations below
-	# df_2 = df_2.assign(Profit = df_2['Market_value'] - df_2['Cost'])
-	# df_2 = df_2.assign(Yield = np.round_((df_2['Profit'] / df_2['Cost'])*100, decimals=1))
-	df_2 = df_2.assign(Profit = df_2['Market_value'].map(lambda x: round(x - ts_x_Total_cost_ave,2)))
-	df_2 = df_2.assign(Yield = df_2['Profit'].map(lambda x: round((x/ts_x_Total_cost_ave)*100,1)))
+	df_2 = df_2.assign(Profit = df_2['Market_value'] - df_2['Cost'])
+	df_2 = df_2.assign(Yield = np.round_((df_2['Profit'] / df_2['Cost'])*100, decimals=1))
 
 	df = pd.concat([df_1, df_2])  # concatenate recalculated df_2 onto df_1 and set this newly created dataframe to the initial df
 	# print(ts_x_Date) #PRINT------------PRINT--------------PRINT#
@@ -131,7 +132,6 @@ num_companies = 0
 # initiate a variable that will become a dataframe made up of each companies cost and profit
 pf = None
 # list of companies to use
-# tickers = ["NASDAQ:SPLK", "NYSE:SHOP"]
 tickers = transactions.Ticker.unique()
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
