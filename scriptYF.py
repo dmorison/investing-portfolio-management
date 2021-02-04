@@ -1,3 +1,7 @@
+# transactions need to be in cronological order
+# ensure transactions are numbers without commas
+# US stocks need to have Cost_per_share_ave quoted in dollars $
+
 import yfinance as yf
 import pandas as pd
 import numpy as np
@@ -82,7 +86,7 @@ def get_company_data(xyz):
 		df = df.assign(Cost = ts_Total_cost_ave)  # assign total cost to df column
 	
 	# need to check which is more accurate between two sets of calculations below
-	df = df.assign(Profit = df['Market_value'] - df['Cost'])  # calculate profit based on market value subtract total cost for each day and assign column to df
+	df = df.assign(Profit = np.round_(df['Market_value'] - df['Cost'], decimals=2))  # calculate profit based on market value subtract total cost for each day and assign column to df
 	df = df.assign(Yield = np.round_((df['Profit'] / df['Cost'])*100, decimals=1))  # calculate percentage yield based on profit for each day and assign column to df
 
 # using all following transactions, break up initial df into chuncks to rebase calculations for each transactions and concatenate them back together
@@ -113,7 +117,7 @@ def build_data(x):
 		df_2 = df_2.assign(Market_value = df_2['Close'].map(total_val_calc))
 		df_2 = df_2.assign(Cost = ts_x_Total_cost_ave)
 
-	df_2 = df_2.assign(Profit = df_2['Market_value'] - df_2['Cost'])
+	df_2 = df_2.assign(Profit = np.round_(df_2['Market_value'] - df_2['Cost'], decimals=2))
 	df_2 = df_2.assign(Yield = np.round_((df_2['Profit'] / df_2['Cost'])*100, decimals=1))
 
 	df = pd.concat([df_1, df_2])  # concatenate recalculated df_2 onto df_1 and set this newly created dataframe to the initial df
@@ -144,7 +148,7 @@ for indx, symbl in enumerate(tickers):
 	print(df.head(3)) #PRINT------------PRINT--------------PRINT#
 	print(df.tail(3)) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	# df.to_csv('./company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
+	df.to_csv('./company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + symbl.split(':')[1]
@@ -188,9 +192,9 @@ print(All_profits.tail(3)) #PRINT------------PRINT--------------PRINT#
 
 # sum the columns for all costs and all profits dataframes to get the totals
 Total_cost = All_costs.sum(axis=1, skipna=True)
-Total_profit = All_profits.sum(axis=1, skipna=True)
+Total_profit = np.round_(All_profits.sum(axis=1, skipna=True), decimals=1)
 # calculate the percentage performance column for each day
-Performance = np.round_((Total_profit/Total_cost)*100,decimals=1)
+Performance = np.round_((Total_profit/Total_cost)*100, decimals=1)
 
 # add the totals and performance columns to pf dataframe
 pf['Total_cost'] = Total_cost
@@ -202,5 +206,5 @@ print(pf.tail()) #PRINT------------PRINT--------------PRINT#
 # create a dataframe of just the totals and performance
 Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
 # write performance dataframe with total cost and profit to csv
-# Totals_df.to_csv('daily_performance.csv', encoding='utf-8')
+Totals_df.to_csv('daily_performance.csv', encoding='utf-8')
 print("--------------- COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
