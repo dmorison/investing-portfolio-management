@@ -1,2 +1,4 @@
 company_datasets/
 daily_performance.csv
+transactions.csv
+all_transactions.csv

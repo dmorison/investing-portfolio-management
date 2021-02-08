@@ -6,7 +6,7 @@ import yfinance as yf
 import pandas as pd
 import numpy as np
 
-transactions = pd.read_csv('transactions.csv')
+transactions = pd.read_csv('./Ingwe/transactions.csv')
 
 company_transactions = None
 ts_Quantity = None
@@ -148,7 +148,7 @@ for indx, symbl in enumerate(tickers):
 	print(df.head(3)) #PRINT------------PRINT--------------PRINT#
 	print(df.tail(3)) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	df.to_csv('./company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
+	df.to_csv('./Ingwe/company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + symbl.split(':')[1]
@@ -206,5 +206,5 @@ print(pf.tail()) #PRINT------------PRINT--------------PRINT#
 # create a dataframe of just the totals and performance
 Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
 # write performance dataframe with total cost and profit to csv
-Totals_df.to_csv('daily_performance.csv', encoding='utf-8')
+Totals_df.to_csv('./Ingwe/daily_performance.csv', encoding='utf-8')
 print("--------------- COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
