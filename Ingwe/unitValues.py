@@ -49,6 +49,6 @@ df1 = df1.assign(Running_balance = df1['Cash_balance'].map(calculate_running_bal
 df1 = df1.assign(Net_asset_value = df1['Total_cost'].fillna(0) + df1['Total_profit'].fillna(0) + df1['Running_balance'])
 df1 = df1.assign(Unit_value = df1.apply(lambda x: calculate_unit_value(a = x['Total_profit'], b = x['Net_asset_value']), axis=1))
 df1 = df1.assign(Unit_val_change = df1['Unit_value'].map(lambda x: np.round_(((x - 1) / 1) * 100, decimals=2)))
-print(df1)
+print(df1) #PRINT------------PRINT--------------PRINT#
 
 df1.to_csv('daily_unit_value.csv', encoding='utf-8')
