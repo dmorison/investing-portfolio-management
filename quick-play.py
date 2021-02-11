@@ -1,7 +1,11 @@
 import pandas as pd
-import yfinance as yf
+# import yfinance as yf
 
-transactions = pd.read_csv('transactions.csv')
+df = pd.read_csv("./Ingwe/daily_unit_value.csv", index_col="Date")
+print(df)
+print(df.info())
+
+# transactions = pd.read_csv('transactions.csv')
 
 # companies = transactions.Ticker.unique()
 # print(companies)
@@ -24,5 +28,5 @@ transactions = pd.read_csv('transactions.csv')
 # print(new_ex_df.shape)
 # print(new_ex_df.head())
 
-us = yf.download("SPLK", "2018-10-19")
-print(us.head())
+# us = yf.download("SPLK", "2018-10-19")
+# print(us.head())
