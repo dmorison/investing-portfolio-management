@@ -1,6 +1,6 @@
 # transactions need to be in cronological order
 # ensure transactions are numbers without commas
-# US stocks need to have Cost_per_share_ave quoted in dollars $ but Total_cost_ave in pounds £
+# US stocks need to have Cost_per_share_ave quoted in dollars but Total_cost_ave in pounds
 
 import yfinance as yf
 import pandas as pd
@@ -8,7 +8,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = dave
+portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/transactions.csv')
 

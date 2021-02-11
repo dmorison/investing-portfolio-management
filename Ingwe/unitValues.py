@@ -33,6 +33,11 @@ def calculate_running_balance(a):
     else:
         return running_balance
 
+performance_cols = ['Total_cost', 'Total_profit', 'Performance']
+for col in performance_cols:
+    df1[col] = df1[col].map(calculate_running_balance)
+    running_balance = 0
+
 def calculate_unit_value(a, b):
     profit = 0
     if pd.notna(a):
