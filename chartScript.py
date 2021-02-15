@@ -15,14 +15,7 @@ daily_units = pd.read_csv("./Ingwe/daily_unit_value.csv", index_col=0, parse_dat
 # print(daily_units.index)
 print(daily_units.loc['2020-10-29'])
 
-daily_units['Weekday'] = daily_units.index.weekday_name
-# print(daily_units.head())
-
 daily_units['Performance'].plot()
 plt.show()
-# %%
-print(daily_units['Performance'].describe())
-maxpf = daily_units['Performance'].idxmax()
-print(daily_units.loc[maxpf])
-
+plt.savefig('Performance.png')
 # %%

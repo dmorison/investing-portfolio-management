@@ -40,17 +40,15 @@ def ticker(x):
 # calculate market value by multiplying x='close share price' by quantity of transaction shares
 # divide UK stocks by 100 to return total value
 def total_val_calc(x):
-	# if market(company) == "UK":
 	return round((x * ts_Quantity) / 100, 2)
-	# else:
-	# 	return round(x * ts_Quantity, 2)
 
+# US stocks need to factor in exchange rate a='close share price' and b = 'GBPUSD' exchange rate
 def us_total_val_calc(a, b):
 	return round((a / b) * ts_Quantity, 2)
 
 # get company market data based on the first transaction and build the company dataframe for the first transaction up to todays date
 def get_company_data(xyz):
-	print(xyz) #PRINT------------PRINT--------------PRINT#
+	print("Company: " + xyz) #PRINT------------PRINT--------------PRINT#
 	global company_transactions
 	global ts_Quantity
 	global df
@@ -66,16 +64,19 @@ def get_company_data(xyz):
 	ts_Total_cost_ave = ts['Total_cost_ave']
 	ts_Cost_per_share_ave = ts['Cost_per_share_ave']
 
-	print(ts_Date) #PRINT------------PRINT--------------PRINT#
-	# market data only necessary for first transaction
+	print("First purchased: " + ts_Date) #PRINT------------PRINT--------------PRINT#
+	#====================================================#
+	# get market data only necessary for first transaction
 	market_data = yf.download(ts_Ticker, ts_Date)
 	print(market_data.head(3)) #PRINT------------PRINT--------------PRINT#
+	print("Market data length: " + str(len(market_data.index))) #PRINT------------PRINT--------------PRINT#
 	if market_data.empty:
 		exit(ts_Ticker + ": No data found, symbol may be delisted")
 	else:
 		df = market_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
-	#-------------------------------------------------
+	#====================================================#
 	
+	# seperate US stocks to calculate Market value and Cost to be able to factor in exchange rate
 	if market(company) == "US":
 		date_loc = Exchange_rate.index.get_loc(ts_Date)
 		Ex_rate_df = Exchange_rate.iloc[date_loc: , :]
@@ -105,6 +106,7 @@ def build_data(x):
 	ts_x = company_transactions.iloc[x, :]  # get the next transaction
 	# set transaction values
 	ts_x_Date = ts_x['Date']
+	print("Transaction date: " + ts_x_Date) #PRINT------------PRINT--------------PRINT#
 	ts_Quantity = ts_Quantity + ts_x['Quantity']  # reset the initial ts_Quantity to use in total_val_calc function
 	ts_x_Total_cost_ave = ts_x['Total_cost_ave']
 	ts_x_Cost_per_share_ave = ts_x['Cost_per_share_ave']
@@ -127,13 +129,12 @@ def build_data(x):
 	df_2 = df_2.assign(Yield = np.round_((df_2['Profit'] / df_2['Cost'])*100, decimals=1))
 
 	df = pd.concat([df_1, df_2])  # concatenate recalculated df_2 onto df_1 and set this newly created dataframe to the initial df
-	# print(ts_x_Date) #PRINT------------PRINT--------------PRINT#
 
 # loop through all compnays transactions to rebase the calculations for each transaction
 def build_company_datasets():
 	global company_transactions
-	print(company_transactions) #PRINT------------PRINT--------------PRINT#
 	print("----------- TRANSACTIONS CALCULATIONS -----------") #PRINT------------PRINT--------------PRINT#
+	print(company_transactions) #PRINT------------PRINT--------------PRINT#
 	for x in range(1, len(company_transactions.index)):
 		build_data(x)
 
@@ -143,19 +144,17 @@ num_companies = 0
 pf = None
 # list of companies to use
 tickers = transactions.Ticker.unique()
-# tickers = ['NYSE:BRK-B', 'LON:TSTL']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
+	print("---------------- Company " + str(num_companies + 1) + " of " + str(len(tickers)) + " ----------------") #PRINT------------PRINT--------------PRINT#
 	get_company_data(symbl)  # get company market data and create initial df
 	# only build data if there are more than one transaction
 	if len(company_transactions.index) > 1:
 		build_company_datasets()  # build the company dataset for the remaining transactions
 
 	print(df.info()) #PRINT------------PRINT--------------PRINT#
-	print(df.head(3)) #PRINT------------PRINT--------------PRINT#
-	print(df.tail(3)) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	df.to_csv(portfolio + '/company_datasets/' + company.split(':')[1] + '.csv', encoding='utf-8')
+	df.to_csv(portfolio + '/company_datasets/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + symbl.split(':')[1]
@@ -172,14 +171,10 @@ for indx, symbl in enumerate(tickers):
 		pf = pf.join(pf_1, how="outer")
 		num_companies = num_companies + 1
 	
-	print(pf.shape) #PRINT------------PRINT--------------PRINT#
+	print("================ COMPANY COMPLETE ================") #PRINT------------PRINT--------------PRINT#
 
 pf.fillna(method='ffill', inplace=True)
-print(num_companies) #PRINT------------PRINT--------------PRINT#
-print(pf.head(3)) #PRINT------------PRINT--------------PRINT#
-print(pf.tail(3)) #PRINT------------PRINT--------------PRINT#
 print(pf.info()) #PRINT------------PRINT--------------PRINT#
-# print(pf.loc['2020-12-15':'2021-01-08',])
 
 # initiate empty list variables for cost and column numbers
 Cost_cols = []
@@ -194,10 +189,6 @@ for x in range(0, num_companies):
 # create all coasts and all profits dataframes for companies from pf dataframe
 All_costs = pf.iloc[:, Cost_cols]
 All_profits = pf.iloc[:, Profit_cols]
-print(All_costs.head(3)) #PRINT------------PRINT--------------PRINT#
-print(All_costs.tail(3)) #PRINT------------PRINT--------------PRINT#
-print(All_profits.head(3)) #PRINT------------PRINT--------------PRINT#
-print(All_profits.tail(3)) #PRINT------------PRINT--------------PRINT#
 
 # sum the columns for all costs and all profits dataframes to get the totals
 Total_cost = All_costs.sum(axis=1, skipna=True)
@@ -209,11 +200,12 @@ Performance = np.round_((Total_profit/Total_cost)*100, decimals=1)
 pf['Total_cost'] = Total_cost
 pf['Total_profit'] = Total_profit
 pf['Performance'] = Performance
-print(pf.head()) #PRINT------------PRINT--------------PRINT#
-print(pf.tail()) #PRINT------------PRINT--------------PRINT#
 
 # create a dataframe of just the totals and performance
 Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
+print(Totals_df.head())
+print(Totals_df.tail())
+print(Totals_df.info())
 # write performance dataframe with total cost and profit to csv
-Totals_df.to_csv(portfolio + '/daily_performance.csv', encoding='utf-8')
-print("--------------- COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
+Totals_df.to_csv(portfolio + '/daily_performance.csv', float_format='%.2f', encoding='utf-8')
+print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
