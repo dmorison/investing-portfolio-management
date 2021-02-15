@@ -82,6 +82,8 @@ def get_company_data(xyz):
 		init_ex_rate = Exchange_rate.loc[ts_Date, 'GBPUSD']
 		Ex_rate_df = Ex_rate_df.assign(Percent = Ex_rate_df['GBPUSD'].map(lambda x: ((x - init_ex_rate) / init_ex_rate) * 100))
 		df = df.join(Ex_rate_df, how="outer")
+		df['Close'].replace('', np.nan, inplace=True)
+		df['Close'] = df['Close'].fillna(method='ffill')
 		
 		df = df.assign(Market_value = df.apply(lambda x: us_total_val_calc(a = x['Close'], b = x['GBPUSD']), axis=1))
 		df = df.assign(Cost = df['GBPUSD'].map(lambda x: np.round_((ts_Cost_per_share_ave * ts_Quantity) / x, decimals=2)))
@@ -141,6 +143,7 @@ num_companies = 0
 pf = None
 # list of companies to use
 tickers = transactions.Ticker.unique()
+# tickers = ['NYSE:BRK-B', 'LON:TSTL']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
 	get_company_data(symbl)  # get company market data and create initial df
@@ -171,10 +174,12 @@ for indx, symbl in enumerate(tickers):
 	
 	print(pf.shape) #PRINT------------PRINT--------------PRINT#
 
+pf.fillna(method='ffill', inplace=True)
 print(num_companies) #PRINT------------PRINT--------------PRINT#
 print(pf.head(3)) #PRINT------------PRINT--------------PRINT#
 print(pf.tail(3)) #PRINT------------PRINT--------------PRINT#
 print(pf.info()) #PRINT------------PRINT--------------PRINT#
+# print(pf.loc['2020-12-15':'2021-01-08',])
 
 # initiate empty list variables for cost and column numbers
 Cost_cols = []
