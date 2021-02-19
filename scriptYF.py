@@ -8,9 +8,9 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
-transactions = pd.read_csv(portfolio + '/transactions.csv')
+transactions = pd.read_csv(portfolio + '/input_data/transactions.csv')
 
 company_transactions = None
 ts_Quantity = None
@@ -40,11 +40,11 @@ def ticker(x):
 # calculate market value by multiplying x='close share price' by quantity of transaction shares
 # divide UK stocks by 100 to return total value
 def total_val_calc(x):
-	return round((x * ts_Quantity) / 100, 2)
+	return float((x * ts_Quantity) / 100)
 
 # US stocks need to factor in exchange rate a='close share price' and b = 'GBPUSD' exchange rate
 def us_total_val_calc(a, b):
-	return round((a / b) * ts_Quantity, 2)
+	return float((a / b) * ts_Quantity)
 
 # get company market data based on the first transaction and build the company dataframe for the first transaction up to todays date
 def get_company_data(xyz):
@@ -87,14 +87,17 @@ def get_company_data(xyz):
 		df['Close'] = df['Close'].fillna(method='ffill')
 		
 		df = df.assign(Market_value = df.apply(lambda x: us_total_val_calc(a = x['Close'], b = x['GBPUSD']), axis=1))
-		df = df.assign(Cost = df['GBPUSD'].map(lambda x: np.round_((ts_Cost_per_share_ave * ts_Quantity) / x, decimals=2)))
+		df = df.assign(Cost = df['GBPUSD'].map(lambda x: (ts_Cost_per_share_ave * ts_Quantity) / x))
 	else:
 		df = df.assign(Market_value = df['Close'].map(total_val_calc))  # calculate market value and assign column to df
-		df = df.assign(Cost = ts_Total_cost_ave)  # assign total cost to df column
+		df = df.assign(Cost = float(ts_Total_cost_ave))  # assign total cost to df column
 	
 	# need to check which is more accurate between two sets of calculations below
-	df = df.assign(Profit = np.round_(df['Market_value'] - df['Cost'], decimals=2))  # calculate profit based on market value subtract total cost for each day and assign column to df
-	df = df.assign(Yield = np.round_((df['Profit'] / df['Cost'])*100, decimals=1))  # calculate percentage yield based on profit for each day and assign column to df
+	df = df.assign(Profit = df['Market_value'] - df['Cost'])  # calculate profit based on market value subtract total cost for each day and assign column to df
+	df = df.assign(Yield = (df['Profit'] / df['Cost']) * 100)  # calculate percentage yield based on profit for each day and assign column to df
+	# insert the weekday names column
+	week_day_col_values = df.index.weekday_name
+	df.insert(loc=0, column='Weekday', value=week_day_col_values)
 
 # using all following transactions, break up initial df into chuncks to rebase calculations for each transactions and concatenate them back together
 def build_data(x):
@@ -120,13 +123,13 @@ def build_data(x):
 	if market(company) == "US":
 		df_2 = df_2.assign(Market_value = df_2.apply(lambda x: us_total_val_calc(a = x['Close'], b = x['GBPUSD']), axis=1))
 		# df_2 = df_2.assign(Cost = df['GBPUSD'].map(lambda x: round(ts_x_Total_cost_ave / x, 2)))
-		df_2 = df_2.assign(Cost = df_2['GBPUSD'].map(lambda x: np.round_((ts_x_Cost_per_share_ave * ts_Quantity) / x, decimals=2)))
+		df_2 = df_2.assign(Cost = df_2['GBPUSD'].map(lambda x: (ts_x_Cost_per_share_ave * ts_Quantity) / x))
 	else:
 		df_2 = df_2.assign(Market_value = df_2['Close'].map(total_val_calc))
-		df_2 = df_2.assign(Cost = ts_x_Total_cost_ave)
+		df_2 = df_2.assign(Cost = float(ts_x_Total_cost_ave))
 
-	df_2 = df_2.assign(Profit = np.round_(df_2['Market_value'] - df_2['Cost'], decimals=2))
-	df_2 = df_2.assign(Yield = np.round_((df_2['Profit'] / df_2['Cost'])*100, decimals=1))
+	df_2 = df_2.assign(Profit = df_2['Market_value'] - df_2['Cost'])
+	df_2 = df_2.assign(Yield = (df_2['Profit'] / df_2['Cost']) * 100)
 
 	df = pd.concat([df_1, df_2])  # concatenate recalculated df_2 onto df_1 and set this newly created dataframe to the initial df
 
@@ -152,9 +155,13 @@ for indx, symbl in enumerate(tickers):
 	if len(company_transactions.index) > 1:
 		build_company_datasets()  # build the company dataset for the remaining transactions
 
+	# create dataframe of weeks
+	df_weeks = df.loc[df['Weekday'] == "Friday"]
+	print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
 	print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	df.to_csv(portfolio + '/company_datasets/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+	df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+	df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + symbl.split(':')[1]
@@ -192,9 +199,9 @@ All_profits = pf.iloc[:, Profit_cols]
 
 # sum the columns for all costs and all profits dataframes to get the totals
 Total_cost = All_costs.sum(axis=1, skipna=True)
-Total_profit = np.round_(All_profits.sum(axis=1, skipna=True), decimals=1)
+Total_profit = All_profits.sum(axis=1, skipna=True)
 # calculate the percentage performance column for each day
-Performance = np.round_((Total_profit/Total_cost)*100, decimals=1)
+Performance = (Total_profit/Total_cost)*100
 
 # add the totals and performance columns to pf dataframe
 pf['Total_cost'] = Total_cost
@@ -203,9 +210,19 @@ pf['Performance'] = Performance
 
 # create a dataframe of just the totals and performance
 Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
+# insert the weekday names column
+totals_week_days = Totals_df.index.weekday_name
+Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
+# create dataframe of weeks
+Totals_df_weeks = Totals_df.loc[Totals_df['Weekday'] == "Friday"]
+
+print(Totals_df_weeks.head())
+print(Totals_df_weeks.tail())
+print(Totals_df_weeks.info())
 print(Totals_df.head())
 print(Totals_df.tail())
 print(Totals_df.info())
 # write performance dataframe with total cost and profit to csv
-Totals_df.to_csv(portfolio + '/daily_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df.to_csv(portfolio + '/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df_weeks.to_csv(portfolio + '/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#

@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 
-transactions = pd.read_csv('all_transactions.csv', index_col='date', parse_dates=True)
-performance = pd.read_csv('daily_performance.csv', index_col='Date', parse_dates=True)
+transactions = pd.read_csv('./input_data/all_transactions.csv', index_col='date', parse_dates=True)
+performance = pd.read_csv('daily_portfolio_performance.csv', index_col='Date', parse_dates=True)
 
 ts_df = transactions[['typeid', 'value', 'symbol']]
 ts_df = ts_df.sort_index()
@@ -50,12 +50,10 @@ df1 = df1.assign(Net_asset_value = df1['Total_cost'].fillna(0) + df1['Total_prof
 df1 = df1.assign(Unit_value = df1.apply(lambda x: calculate_unit_value(a = x['Total_profit'], b = x['Net_asset_value']), axis=1))
 df1 = df1.assign(Unit_val_change = df1['Unit_value'].map(lambda x: np.round_(((x - 1) / 1) * 100, decimals=2)))
 
-week_day_col_values = df1.index.weekday_name
-df1.insert(loc=0, column='Weekday', value=week_day_col_values)
 print(df1.head(10)) #PRINT------------PRINT--------------PRINT#
 print(df1.tail(10)) #PRINT------------PRINT--------------PRINT#
 print(df1.info()) #PRINT------------PRINT--------------PRINT#
-df1.to_csv('daily_unit_value.csv', encoding='utf-8')
+df1.to_csv('daily_unit_values.csv', encoding='utf-8')
 
 print(df1['Performance'].describe())
 maxpf_daily = df1['Performance'].idxmax()
@@ -65,7 +63,7 @@ df_weeks = df1.loc[df1['Weekday'] == "Friday"]
 print(df_weeks.head(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
-df_weeks.to_csv('weekly_unit_value.csv', encoding='utf-8')
+df_weeks.to_csv('weekly_unit_values.csv', encoding='utf-8')
 
 print(df_weeks['Performance'].describe())
 maxpf_weekly = df_weeks['Performance'].idxmax()
