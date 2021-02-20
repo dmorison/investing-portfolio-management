@@ -18,7 +18,7 @@ for company in tickers:
     print(init_date) #PRINT------------PRINT--------------PRINT#
     market_data = market_data.assign(Percent = market_data['Close'].map(lambda x: ((x - init_date) / init_date) * 100))
 
-    company_transactions = company_transactions[['Cost_per_share_ave', 'Total_cost_ave']]
+    company_transactions = company_transactions[['Total_ts_cost']]
     df = market_data.join(company_transactions, how="outer")
     df.fillna(0, inplace=True)
     print(df.info()) #PRINT------------PRINT--------------PRINT#
