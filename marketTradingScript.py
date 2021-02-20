@@ -20,7 +20,7 @@ for company in tickers:
 
     company_transactions = company_transactions[['Total_ts_cost']]
     df = market_data.join(company_transactions, how="outer")
-    df.fillna(0, inplace=True)
+    # df.fillna(0, inplace=True)
     print(df.info()) #PRINT------------PRINT--------------PRINT#
 
     df.to_csv(portfolio + './stock_market_trading/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
