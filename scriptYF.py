@@ -8,7 +8,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = dave
+portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv')
 
@@ -55,19 +55,21 @@ def get_company_data(xyz):
 	global company
 	global Exchange_rate
 	company = xyz  # set the company to the transaction symbol
-	company_transactions = transactions[transactions['Ticker'] == company]  # get transaction for company from all transactions
+	company_transactions = transactions[transactions['Ticker'] == company]  # get transactions for company from all transactions
 	ts = company_transactions.iloc[0, :]  # get first transaction to retrieve market data from
 	# set transaction values
-	ts_Date = ts['Date']
+	ts_Date = pd.to_datetime(ts['Date'])
 	ts_Ticker = ticker(company) # get Yahoo Finance ticket/symbol for company
 	ts_Quantity = ts['Quantity']
 	ts_Total_cost_ave = ts['Total_cost_ave']
 	ts_Cost_per_share_ave = ts['Cost_per_share_ave']
 
-	print("First purchased: " + ts_Date) #PRINT------------PRINT--------------PRINT#
+	print("First purchased: " + str(ts_Date)) #PRINT------------PRINT--------------PRINT#
+	ts_Date_90 = ts_Date - pd.to_timedelta(90, unit='d')
+	print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
 	#====================================================#
 	# get market data only necessary for first transaction
-	market_data = yf.download(ts_Ticker, ts_Date)
+	market_data = yf.download(ts_Ticker, ts_Date_90)
 	print(market_data.head(3)) #PRINT------------PRINT--------------PRINT#
 	print("Market data length: " + str(len(market_data.index))) #PRINT------------PRINT--------------PRINT#
 	if market_data.empty:
@@ -75,13 +77,21 @@ def get_company_data(xyz):
 	else:
 		df = market_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
 	#====================================================#
+
+	df.to_csv(portfolio + '/stock_market_trading/' + company.split(':')[1] + '.csv', encoding='utf-8')
+
+	ts_Date_loc = df.index.get_loc(ts_Date)
+	df = df.iloc[ts_Date_loc: , :]
+	print(df.head(3)) #PRINT------------PRINT--------------PRINT#
 	
 	# seperate US stocks to calculate Market value and Cost to be able to factor in exchange rate
 	if market(company) == "US":
+		# get the location of the transaction date from which to rebase the exchange rate data from
 		date_loc = Exchange_rate.index.get_loc(ts_Date)
 		Ex_rate_df = Exchange_rate.iloc[date_loc: , :]
 		init_ex_rate = Exchange_rate.loc[ts_Date, 'GBPUSD']
 		Ex_rate_df = Ex_rate_df.assign(Percent = Ex_rate_df['GBPUSD'].map(lambda x: ((x - init_ex_rate) / init_ex_rate) * 100))
+		# join exchange rate dataframe with market data
 		df = df.join(Ex_rate_df, how="outer")
 		df['Close'].replace('', np.nan, inplace=True)
 		df['Close'] = df['Close'].fillna(method='ffill')
@@ -158,6 +168,7 @@ for indx, symbl in enumerate(tickers):
 	# create dataframe of weeks
 	df_weeks = df.loc[df['Weekday'] == "Friday"]
 	print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
+	df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
 	print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
 	df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
@@ -215,6 +226,7 @@ totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
 # create dataframe of weeks
 Totals_df_weeks = Totals_df.loc[Totals_df['Weekday'] == "Friday"]
+Totals_df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
 
 print(Totals_df_weeks.head())
 print(Totals_df_weeks.tail())

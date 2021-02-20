@@ -60,6 +60,7 @@ maxpf_daily = df1['Performance'].idxmax()
 print(df1.loc[maxpf_daily])
 
 df_weeks = df1.loc[df1['Weekday'] == "Friday"]
+df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
 print(df_weeks.head(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#

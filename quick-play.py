@@ -5,7 +5,7 @@ import yfinance as yf
 # print(df)
 # print(df.info())
 
-# transactions = pd.read_csv('transactions.csv')
+# transactions = pd.read_csv('./Dave/input_data/transactions.csv')
 
 # companies = transactions.Ticker.unique()
 # print(companies)
@@ -13,6 +13,19 @@ import yfinance as yf
 # print(transactions.head())
 # init_date = transactions.iloc[0, 0]
 # print(init_date)
+
+init_date = pd.to_datetime("2020-09-01")
+print(init_date)
+init_date_90 = init_date - pd.to_timedelta(93, unit='d')
+print(init_date_90)
+df = yf.download("SPLK", init_date_90)
+print(df.head())
+print(df.info())
+
+ts_Date_loc = df.index.get_loc(init_date)
+df = df.iloc[ts_Date_loc: , :]
+print(df.head())
+print(df.info())
 
 # exchR = yf.download("GBPUSD=X", init_date)
 # print(exchR.head())
@@ -28,5 +41,5 @@ import yfinance as yf
 # print(new_ex_df.shape)
 # print(new_ex_df.head())
 
-us = yf.download("SPLK", "2020-12-20")
-print(us)
+# us = yf.download("SPLK", "2020-12-20")
+# print(us)
