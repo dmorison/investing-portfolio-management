@@ -17,8 +17,8 @@ ts_Quantity = None
 df = None
 company = None
 
-# first get GBPUSD exchange rate data and assign it to df
 init_date = transactions.iloc[0, 0]
+# first get GBPUSD exchange rate data and assign it to dataframe
 Exchange_rate_data = yf.download("GBPUSD=X", init_date)
 Exchange_rate = Exchange_rate_data[['Close']]
 Exchange_rate.columns = ["GBPUSD"]
@@ -180,6 +180,7 @@ for indx, symbl in enumerate(tickers):
 	# get cost and profit columns from company df and join up pf dataframe with all companies
 	# first company to set pf dataframe while the remaining companies get joined onto pf
 	if indx == 0:
+		init_ts_date = company_transactions['Date'].iloc[0]  # set the global initial transaction date for use further down on pf dataframe
 		pf = df[['Cost', 'Profit']]
 		pf.columns = [pf_cost_col_name, pf_profit_col_name]
 		num_companies = 1
@@ -224,16 +225,42 @@ Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
 # insert the weekday names column
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
+
+# get indices market data and create indices percentage df to join onto pf daily dataframe
+indices_df = None
+index_names = ["SP500", "FTSE100", "FTSE250", "FTSE350"]
+index_symbls = ["^GSPC", "^FTSE", "^FTMC", "^FTAS"]
+for indx, symbl in enumerate(index_symbls):
+	print(symbl) #PRINT------------PRINT--------------PRINT#
+	idf = yf.download(symbl, init_ts_date)  # use global initial transaction date
+	idf = idf[['Close']]
+	init_val = idf.iloc[0, 0]
+	idf = idf.assign(Percent = idf['Close'].map(lambda x: ((x - init_val) / init_val) * 100))
+	symbl_name = index_names[indx]
+	idf.columns = [symbl_name + "_Close", symbl_name + "_Percent"]
+
+	if indx == 0:
+		indices_df = idf
+	else:
+		indices_df = indices_df.join(idf, how="outer")
+
+print(indices_df.head()) #PRINT------------PRINT--------------PRINT#
+print(indices_df.info()) #PRINT------------PRINT--------------PRINT#
+
+indices_percent_df = indices_df[['SP500_Percent', 'FTSE100_Percent', 'FTSE250_Percent', 'FTSE350_Percent']]
+
+Totals_df = Totals_df.join(indices_percent_df, how="outer")
+
 # create dataframe of weeks
 Totals_df_weeks = Totals_df.loc[Totals_df['Weekday'] == "Friday"]
 Totals_df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
 
-print(Totals_df_weeks.head())
-print(Totals_df_weeks.tail())
-print(Totals_df_weeks.info())
 print(Totals_df.head())
 print(Totals_df.tail())
 print(Totals_df.info())
+print(Totals_df_weeks.head())
+print(Totals_df_weeks.tail())
+print(Totals_df_weeks.info())
 # write performance dataframe with total cost and profit to csv
 Totals_df.to_csv(portfolio + '/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 Totals_df_weeks.to_csv(portfolio + '/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
