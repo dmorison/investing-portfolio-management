@@ -5,5 +5,4 @@ daily_portfolio_performance.csv
 weekly_portfolio_performance.csv
 daily_unit_values.csv
 weekly_unit_values.csv
-transactions.csv
-all_transactions.csv
+input_data/
