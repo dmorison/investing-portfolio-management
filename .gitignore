@@ -1,8 +1,5 @@
+portfolio_performance/
 stock_market_trading/
 stock_performance_daily/
 stock_performance_weekly/
-daily_portfolio_performance.csv
-weekly_portfolio_performance.csv
-daily_unit_values.csv
-weekly_unit_values.csv
 input_data/

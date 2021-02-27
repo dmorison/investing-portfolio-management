@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 
 transactions = pd.read_csv('./input_data/all_transactions.csv', index_col='date', parse_dates=True)
-performance = pd.read_csv('daily_portfolio_performance.csv', index_col='Date', parse_dates=True)
+performance = pd.read_csv('./portfolio_performance/daily_portfolio_performance.csv', index_col='Date', parse_dates=True)
 
 ts_df = transactions[['typeid', 'value', 'symbol']]
 ts_df = ts_df.sort_index()
@@ -53,7 +53,7 @@ df1 = df1.assign(Unit_val_change = df1['Unit_value'].map(lambda x: np.round_(((x
 print(df1.head(10)) #PRINT------------PRINT--------------PRINT#
 print(df1.tail(10)) #PRINT------------PRINT--------------PRINT#
 print(df1.info()) #PRINT------------PRINT--------------PRINT#
-df1.to_csv('daily_unit_values.csv', encoding='utf-8')
+df1.to_csv('./portfolio_performance/daily_unit_values.csv', encoding='utf-8')
 
 print(df1['Performance'].describe())
 maxpf_daily = df1['Performance'].idxmax()
@@ -64,7 +64,7 @@ df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column whic
 print(df_weeks.head(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
-df_weeks.to_csv('weekly_unit_values.csv', encoding='utf-8')
+df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
 
 print(df_weeks['Performance'].describe())
 maxpf_weekly = df_weeks['Performance'].idxmax()

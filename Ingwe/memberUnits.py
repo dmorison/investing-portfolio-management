@@ -1,7 +1,6 @@
 import pandas as pd
-import numpy as np
 
-unit_values = pd.read_csv('./daily_unit_values.csv', index_col='Date', parse_dates=True)
+unit_values = pd.read_csv('./portfolio_performance/daily_unit_values.csv', index_col='Date', parse_dates=True)
 transactions = pd.read_csv('./input_data/member_transactions.csv', index_col='date', parse_dates=True)
 
 unit_values = unit_values[['Unit_value']]
@@ -11,7 +10,7 @@ transactions = transactions.rename_axis('Date')
 transactions.rename(columns={'units':'ttt_units', 'value':'cash_input'}, inplace=True)
 
 df = transactions.join(unit_values)
-# print(df[df['Unit_value'].isna()])
+# print(df[df['Unit_value'].isna()]) #PRINT------------PRINT--------------PRINT#
 
 df.fillna(method='ffill', inplace=True)
 
@@ -39,13 +38,13 @@ for indx, member in enumerate(members):
                            'Total_cash_input': [members_total_input]})
     member_totals = member_totals.append(mfdata, sort=False)
 
-print(df_1.info())
-df_1.to_csv('member_transactions.csv', float_format='%.2f', encoding='utf-8')
+print(df_1.info()) #PRINT------------PRINT--------------PRINT#
+df_1.to_csv('./portfolio_performance/member_transactions.csv', float_format='%.2f', encoding='utf-8')
 
 member_totals = member_totals.assign(Date = unit_values.index[-1])
 member_totals = member_totals.assign(Unit_value = unit_values['Unit_value'].iloc[-1])
 member_totals = member_totals.assign(Total_cash_value = member_totals['Total_units'] * member_totals['Unit_value'])
 member_totals = member_totals.assign(Yield = ((member_totals['Total_cash_value'] - member_totals['Total_cash_input']) / member_totals['Total_cash_input']) * 100)
 
-print(member_totals)
-member_totals.to_csv('member_totals.csv', float_format='%.2f', encoding='utf-8')
+print(member_totals) #PRINT------------PRINT--------------PRINT#
+member_totals.to_csv('./portfolio_performance/member_totals.csv', index=False, float_format='%.2f', encoding='utf-8')
