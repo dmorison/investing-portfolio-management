@@ -262,6 +262,6 @@ print(Totals_df_weeks.head())
 print(Totals_df_weeks.tail())
 print(Totals_df_weeks.info())
 # write performance dataframe with total cost and profit to csv
-Totals_df.to_csv(portfolio + '/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
-Totals_df_weeks.to_csv(portfolio + '/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
