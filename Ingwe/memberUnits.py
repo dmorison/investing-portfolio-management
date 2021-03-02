@@ -5,6 +5,7 @@ transactions = pd.read_csv('./input_data/member_transactions.csv', index_col='da
 
 unit_values = unit_values[['Unit_value']]
 
+transactions.drop(['account', 'typeid'], axis=1, inplace=True)
 transactions = transactions.sort_index()
 transactions = transactions.rename_axis('Date')
 transactions.rename(columns={'units':'ttt_units', 'value':'cash_input'}, inplace=True)

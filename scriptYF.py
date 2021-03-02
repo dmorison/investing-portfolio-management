@@ -216,12 +216,12 @@ Total_profit = All_profits.sum(axis=1, skipna=True)
 Performance = (Total_profit/Total_cost)*100
 
 # add the totals and performance columns to pf dataframe
-pf['Total_cost'] = Total_cost
+pf['Total_invested'] = Total_cost
 pf['Total_profit'] = Total_profit
 pf['Performance'] = Performance
 
 # create a dataframe of just the totals and performance
-Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
+Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 # insert the weekday names column
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
@@ -265,3 +265,4 @@ print(Totals_df_weeks.info())
 Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
+# to try when writing to csv: date_format='%Y-%m-%d'
