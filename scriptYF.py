@@ -17,10 +17,6 @@ ts_Quantity = None
 df = None
 company = None
 
-# print(transactions)
-# print(transactions.info())
-# exit()
-
 init_date = transactions.iloc[0, 0]
 # first get GBPUSD exchange rate data and assign it to dataframe
 Exchange_rate_data = yf.download("GBPUSD=X", init_date)
