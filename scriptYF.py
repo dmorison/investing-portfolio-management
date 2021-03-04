@@ -10,12 +10,16 @@ dave = "./Dave"
 ingwe = "./Ingwe"
 portfolio = ingwe
 
-transactions = pd.read_csv(portfolio + '/input_data/transactions.csv')
+transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
 company_transactions = None
 ts_Quantity = None
 df = None
 company = None
+
+# print(transactions)
+# print(transactions.info())
+# exit()
 
 init_date = transactions.iloc[0, 0]
 # first get GBPUSD exchange rate data and assign it to dataframe
@@ -119,7 +123,7 @@ def build_data(x):
 	ts_x = company_transactions.iloc[x, :]  # get the next transaction
 	# set transaction values
 	ts_x_Date = ts_x['Date']
-	print("Transaction date: " + ts_x_Date) #PRINT------------PRINT--------------PRINT#
+	print("Transaction date: " + str(ts_x_Date)) #PRINT------------PRINT--------------PRINT#
 	ts_Quantity = ts_Quantity + ts_x['Quantity']  # reset the initial ts_Quantity to use in total_val_calc function
 	ts_x_Total_cost_ave = ts_x['Total_cost_ave']
 	ts_x_Cost_per_share_ave = ts_x['Cost_per_share_ave']
