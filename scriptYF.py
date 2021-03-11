@@ -10,7 +10,7 @@ dave = "./Dave"
 ingwe = "./Ingwe"
 portfolio = ingwe
 
-transactions = pd.read_csv(portfolio + '/input_data/transactions.csv')
+transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
 company_transactions = None
 ts_Quantity = None
@@ -119,7 +119,7 @@ def build_data(x):
 	ts_x = company_transactions.iloc[x, :]  # get the next transaction
 	# set transaction values
 	ts_x_Date = ts_x['Date']
-	print("Transaction date: " + ts_x_Date) #PRINT------------PRINT--------------PRINT#
+	print("Transaction date: " + str(ts_x_Date)) #PRINT------------PRINT--------------PRINT#
 	ts_Quantity = ts_Quantity + ts_x['Quantity']  # reset the initial ts_Quantity to use in total_val_calc function
 	ts_x_Total_cost_ave = ts_x['Total_cost_ave']
 	ts_x_Cost_per_share_ave = ts_x['Cost_per_share_ave']
@@ -216,12 +216,12 @@ Total_profit = All_profits.sum(axis=1, skipna=True)
 Performance = (Total_profit/Total_cost)*100
 
 # add the totals and performance columns to pf dataframe
-pf['Total_cost'] = Total_cost
+pf['Total_invested'] = Total_cost
 pf['Total_profit'] = Total_profit
 pf['Performance'] = Performance
 
 # create a dataframe of just the totals and performance
-Totals_df = pf[['Total_cost', 'Total_profit', 'Performance']]
+Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 # insert the weekday names column
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
@@ -265,3 +265,4 @@ print(Totals_df_weeks.info())
 Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
+# to try when writing to csv: date_format='%Y-%m-%d'
