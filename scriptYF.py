@@ -46,6 +46,21 @@ def total_val_calc(x):
 def us_total_val_calc(a, b):
 	return float((a / b) * ts_Quantity)
 
+# function to calculate the week on week performance values for each company
+previous_profit = 0
+previous_market_val = 1
+def calculate_wow(a, b, c):
+	global previous_profit
+	global previous_market_val
+	current_profit = a - previous_profit
+	current_yield = (current_profit / previous_market_val) * 100
+	previous_profit = a
+	previous_market_val = b
+	if c == 'pl':
+		return current_profit
+	else:
+		return current_yield
+
 # get company market data based on the first transaction and build the company dataframe for the first transaction up to todays date
 def get_company_data(xyz):
 	# print("Company: " + xyz) #PRINT------------PRINT--------------PRINT#
@@ -158,17 +173,19 @@ market_val_col = []
 cost_col = []
 profit_col = []
 yield_col = []
-summary_day = None
 # set the number of companies to use to 0
 num_companies = 0
 # initiate a variable that will become a dataframe made up of each companies cost and profit
 pf = None
+# initiate a variable that will append each companies last week on week performance
+summary_wow = None
 # list of companies to use
 tickers = transactions.Ticker.unique()
 # tickers = ['LON:IBST', 'NYSE:BRK-B', 'LON:LGEN']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
 	print("---------------- Company " + str(num_companies + 1) + " of " + str(len(tickers)) + " ----------------") #PRINT------------PRINT--------------PRINT#
+	company_name = transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0]
 	get_company_data(symbl)  # get company market data and create initial df
 	# only build data if there are more than one transaction
 	if len(company_transactions.index) > 1:
@@ -178,10 +195,18 @@ for indx, symbl in enumerate(tickers):
 	df_weeks = df.loc[df['Weekday'] == "Friday"]
 	# print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
 	df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
+	# calculate week on week profit and loss
+	df_weeks = df_weeks.assign(Week_on_week_pl = df_weeks.apply(lambda x: calculate_wow(a = x['Profit'], b = x['Market_value'], c = 'pl'), axis=1))
+	# reset calculate_wow variables
+	previous_profit = 0
+	previous_market_val = 1
+	# calculate week on week performance yield
+	df_weeks = df_weeks.assign(Week_on_week_yield = df_weeks.apply(lambda x: calculate_wow(a = x['Profit'], b = x['Market_value'], c = 'yield'), axis=1))
+	df_weeks.insert(loc=0, column='Company', value=company_name)  # insert the company name into the weekly data
 	# print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
 	# df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
-	# df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+	df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + symbl.split(':')[1]
@@ -192,27 +217,29 @@ for indx, symbl in enumerate(tickers):
 		init_ts_date = company_transactions['Date'].iloc[0]  # set the global initial transaction date for use further down on pf dataframe
 		pf = df[['Cost', 'Profit']]
 		pf.columns = [pf_cost_col_name, pf_profit_col_name]
+		summary_wow = df_weeks[['Company', 'Week_on_week_pl', 'Week_on_week_yield']].tail(1)
 		num_companies = 1
 	else:
 		pf_1 = df[['Cost', 'Profit']]
 		pf_1.columns = [pf_cost_col_name, pf_profit_col_name]
 		pf = pf.join(pf_1, how="outer")
+		company_wow = df_weeks[['Company', 'Week_on_week_pl', 'Week_on_week_yield']].tail(1)
+		summary_wow = summary_wow.append(company_wow)
 		num_companies = num_companies + 1
 	
-	print(df.iloc[-1,:])
-	# append the last row/day values to the appropriate array
+	# append the last row/day values of the company to the appropriate array
+	print(df.iloc[-1,:]) #PRINT------------PRINT--------------PRINT#
 	ticker_col.append(symbl.split(':')[1])
-	company_col.append(transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0])
+	company_col.append(company_name)
 	market_val_col.append(df['Market_value'].iloc[-1])
 	cost_col.append(df['Cost'].iloc[-1])
 	profit_col.append(df['Profit'].iloc[-1])
 	yield_col.append(df['Yield'].iloc[-1])
-	summary_day = df['Weekday'].iloc[-1]
 	print("================ COMPANY COMPLETE ================") #PRINT------------PRINT--------------PRINT#
 
 pf.fillna(method='ffill', inplace=True)
 # print(pf.info()) #PRINT------------PRINT--------------PRINT#
-current_portfolio_summary = pd.read_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', index_col='Ticker')
+# create a summary dataframe of all the arrays built up from each company
 summary_data = {'Ticker': ticker_col,
 				'Company': company_col,
 				'Market_value': market_val_col,
@@ -228,10 +255,12 @@ summary_profit = summary_value - summary_cost
 summary_yield = (summary_profit / summary_cost) * 100
 
 summary_df = summary_df.assign(Portfolio_weighting = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
-summary_df = summary_df.join(current_portfolio_summary[['Yield']], rsuffix="_previous")
-summary_df = summary_df.assign(Week_yield = summary_df['Yield'].fillna(0) - summary_df['Yield_previous'].fillna(0))
+# summary_df = summary_df.join(current_portfolio_summary[['Yield']], rsuffix="_previous")
+# summary_df = summary_df.assign(Week_yield = summary_df['Yield'].fillna(0) - summary_df['Yield_previous'].fillna(0))
 print(summary_df)
 summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
+print(summary_wow)
+summary_wow.to_csv(portfolio + '/portfolio_performance/companies_wow_performance.csv', float_format='%.2f', encoding='utf-8')
 
 # initiate empty list variables for cost and column numbers
 Cost_cols = []
