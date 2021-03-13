@@ -5,11 +5,16 @@ import pandas as pd
 # print(df)
 # print(df.info())
 
-transactions = pd.read_csv('./Ingwe/input_data/transactions.csv')
+transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', index_col='Date', parse_dates=True)
+# print(transactions)
+transactions['Year'] = transactions.index.year
+transactions['Week'] = transactions.index.week
+transactions['year_week'] = (transactions.index.year).astype(str) + '_' + (transactions.index.week).astype(str)
+print(transactions)
 
-symbl = 'LON:LLOY'
-row1 = transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0]
-print(row1)
+# symbl = 'LON:LLOY'
+# row1 = transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0]
+# print(row1)
 
 # companies = transactions.Ticker.unique()
 # print(companies)
