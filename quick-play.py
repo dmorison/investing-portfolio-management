@@ -1,18 +1,20 @@
 import pandas as pd
-# import yfinance as yf
+import yfinance as yf
 
 # df = pd.read_csv("./Ingwe/daily_unit_value.csv", index_col="Date")
 # print(df)
 # print(df.info())
 
-transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', index_col='Date', parse_dates=True)
+# transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', index_col='Date', parse_dates=True)
 # print(transactions)
-transactions['Year'] = transactions.index.year
-transactions['Week'] = transactions.index.week
-transactions['year_week'] = (transactions.index.year).astype(str) + '_' + (transactions.index.week).astype(str)
-print(transactions)
+# transactions['Year'] = transactions.index.year
+# transactions['Week'] = transactions.index.week
+# transactions['year_week'] = (transactions.index.year).astype(str) + '_' + (transactions.index.week).astype(str)
+# print(transactions)
 
-# symbl = 'LON:LLOY'
+# symbl = 'LON:ULVR'
+df = yf.download("ULVR.L", '2019-02-26')
+print(df)
 # row1 = transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0]
 # print(row1)
 
