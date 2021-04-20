@@ -9,7 +9,7 @@ tickers = transactions.Ticker.unique()
 
 for company in tickers:
     print("---------------- Company: " + company + " ----------------") #PRINT------------PRINT--------------PRINT#
-    market_data = pd.read_csv(portfolio + './stock_market_trading/' + company.split(':')[1] + '.csv', index_col='Date', parse_dates=True)
+    market_data = pd.read_csv(portfolio + '/stock_market_trading/' + company.split(':')[1] + '.csv', index_col='Date', parse_dates=True)
     company_transactions = transactions[transactions['Ticker'] == company]  # get transactions for company from all transactions
     print(company_transactions) #PRINT------------PRINT--------------PRINT#
 
@@ -22,4 +22,4 @@ for company in tickers:
     # df.fillna(0, inplace=True)
     print(df.info()) #PRINT------------PRINT--------------PRINT#
 
-    df.to_csv(portfolio + './stock_market_trading/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    df.to_csv(portfolio + '/stock_market_trading/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
