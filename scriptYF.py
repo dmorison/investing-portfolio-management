@@ -9,7 +9,7 @@ import numpy as np
 dave = "./Dave"
 ingwe = "./Ingwe"
 portfolio = ingwe
-offline = True
+offline = False
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
@@ -102,7 +102,7 @@ def get_company_data(xyz):
 		df = market_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
 	#====================================================#
 
-	# df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8')
+	df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8')
 
 	ts_Date_loc = df.index.get_loc(ts_Date)
 	df = df.iloc[ts_Date_loc: , :]
@@ -219,8 +219,8 @@ summary_wow = None
 all_companies_weeks = None
 
 # list of companies to use
-# tickers = transactions.Ticker.unique()
-tickers = ['LON:DGE', 'NYSE:BRK-B']
+tickers = transactions.Ticker.unique()
+# tickers = ['LON:DGE', 'NYSE:BRK-B']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
 	print("---------------- Company " + str(num_companies + 1) + " of " + str(len(tickers)) + " ----------------") #PRINT------------PRINT--------------PRINT#
@@ -232,9 +232,9 @@ for indx, symbl in enumerate(tickers):
 		build_company_datasets()  # build the company dataset for the remaining transactions
 
 	# create dataframe of weeks
-	df_weeks = df.loc[df['Weekday'] == "Friday"]
+	df_weeks = df.groupby(df['Year_week'], as_index=False).tail(1)
 	# print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
-	df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
+	# df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
 	# calculate week on week profit and loss
 	df_weeks = df_weeks.assign(Week_on_week_pl = df_weeks.apply(lambda x: calculate_wow(a = x['Profit'], b = x['Market_value'], c = 'pl'), axis=1))
 	# reset calculate_wow variables
@@ -243,13 +243,10 @@ for indx, symbl in enumerate(tickers):
 	# calculate week on week performance yield
 	df_weeks = df_weeks.assign(Week_on_week_yield = df_weeks.apply(lambda x: calculate_wow(a = x['Profit'], b = x['Market_value'], c = 'yield'), axis=1))
 	df_weeks.insert(loc=0, column='Company', value=company_name)  # insert the company name into the weekly data
-	print(df_weeks.tail(30)) #PRINT------------PRINT--------------PRINT#
 	# print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	# df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
-	# df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
-	df_year_weeks = df.groupby(df['Year_week'], as_index=False).tail(1)
-	print(df_year_weeks.tail(30))
+	df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
+	df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 
 	build_all_companies(symbl)  # build the data set of all companies weekly yield and trading
 
@@ -284,10 +281,9 @@ for indx, symbl in enumerate(tickers):
 	yield_col.append(df['Yield'].iloc[-1])
 	print("================ COMPANY COMPLETE ================") #PRINT------------PRINT--------------PRINT#
 
-exit()#########################################################################################################################################
 all_companies_weeks.replace(0, np.nan, inplace=True)
 print(all_companies_weeks) #PRINT------------PRINT--------------PRINT#
-# all_companies_weeks.to_csv(portfolio + '/portfolio_performance/all_companies_expanded_weekly_trading_yield.csv', float_format='%.2f', encoding='utf-8')
+all_companies_weeks.to_csv(portfolio + '/portfolio_performance/all_companies_expanded_weekly_trading_yield.csv', float_format='%.2f', encoding='utf-8')
 
 # create a summary dataframe of all the arrays built up from each company
 summary_data = {'Ticker': ticker_col,
@@ -306,9 +302,9 @@ summary_yield = (summary_profit / summary_cost) * 100  # currently not being use
 
 summary_df = summary_df.assign(Portfolio_weighting = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
 print(summary_df)
-# summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
+summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
 print(summary_wow)
-# summary_wow.to_csv(portfolio + '/portfolio_performance/companies_wow_performance.csv', float_format='%.2f', encoding='utf-8')
+summary_wow.to_csv(portfolio + '/portfolio_performance/companies_wow_performance.csv', float_format='%.2f', encoding='utf-8')
 
 pf.fillna(method='ffill', inplace=True)
 print(pf.info()) #PRINT------------PRINT--------------PRINT#
@@ -379,7 +375,7 @@ print(Totals_df_weeks.head())
 print(Totals_df_weeks.tail())
 print(Totals_df_weeks.info())
 # write performance dataframe with total cost and profit to csv
-# Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
-# Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
 # to try when writing to csv: date_format='%Y-%m-%d'
