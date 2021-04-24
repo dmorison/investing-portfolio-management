@@ -1,6 +1,5 @@
-company_datasets/
-daily_performance.csv
-daily_unit_value.csv
-weekly_unit_value.csv
-transactions.csv
-all_transactions.csv
+portfolio_performance/
+stock_market_trading/
+stock_performance_daily/
+stock_performance_weekly/
+input_data/
