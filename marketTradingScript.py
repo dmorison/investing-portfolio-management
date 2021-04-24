@@ -2,7 +2,7 @@ import pandas as pd
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()

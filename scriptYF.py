@@ -84,17 +84,19 @@ def get_company_data(xyz):
 
 	print("First purchased: " + str(ts_Date)) #PRINT------------PRINT--------------PRINT#
 	ts_Date_90 = ts_Date - pd.to_timedelta(90, unit='d')
-	# print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
+	print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
 	#====================================================#
 	# get market data only necessary for first transaction
 	if offline == True:
 		print("offline mode") #PRINT------------PRINT--------------PRINT#
-		market_data = pd.read_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', index_col='Date', parse_dates=True)
+		market_data = pd.read_csv(portfolio + '/stock_market_data/' + company_ticker + '.csv', index_col='Date', parse_dates=True)
 	else:
 		print("fetching yf api data") #PRINT------------PRINT--------------PRINT#
 		market_data = yf.download(ts_Ticker, ts_Date_90)
+		market_data.to_csv(portfolio + '/stock_market_data/' + company_ticker + '.csv', encoding='utf-8')
 	
 	print(market_data.head(3)) #PRINT------------PRINT--------------PRINT#
+	print(market_data.tail(3)) #PRINT------------PRINT--------------PRINT#
 	# print("Market data length: " + str(len(market_data.index))) #PRINT------------PRINT--------------PRINT#
 	if market_data.empty:
 		exit(ts_Ticker + ": No data found, symbol may be delisted")
