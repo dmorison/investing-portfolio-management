@@ -5,3 +5,6 @@ stock_market_trading/
 stock_performance_daily/
 stock_performance_weekly/
 input_data/
+market_data/
+
+email_weekly.html
