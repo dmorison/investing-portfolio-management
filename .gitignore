@@ -1,6 +1,9 @@
 .vscode/
 portfolio_performance/
+market_data/
 stock_market_trading/
 stock_performance_daily/
 stock_performance_weekly/
 input_data/
+
+email_weekly.html

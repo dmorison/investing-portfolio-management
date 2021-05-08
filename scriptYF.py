@@ -21,7 +21,12 @@ company_ticker = None
 
 init_date = transactions.iloc[0, 0]
 # first get GBPUSD exchange rate data and assign it to dataframe
-Exchange_rate_data = yf.download("GBPUSD=X", init_date)
+if offline == True:
+	Exchange_rate_data = pd.read_csv('./market_data/GBPUSD.csv', index_col='Date', parse_dates=True)
+else:
+	Exchange_rate_data = yf.download("GBPUSD=X", init_date)
+	Exchange_rate_data.to_csv('./market_data/GBPUSD.csv', encoding='utf-8')
+
 Exchange_rate = Exchange_rate_data[['Close']]
 Exchange_rate.columns = ["GBPUSD"]
 
@@ -84,17 +89,19 @@ def get_company_data(xyz):
 
 	print("First purchased: " + str(ts_Date)) #PRINT------------PRINT--------------PRINT#
 	ts_Date_90 = ts_Date - pd.to_timedelta(90, unit='d')
-	# print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
+	print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
 	#====================================================#
 	# get market data only necessary for first transaction
 	if offline == True:
 		print("offline mode") #PRINT------------PRINT--------------PRINT#
-		market_data = pd.read_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', index_col='Date', parse_dates=True)
+		market_data = pd.read_csv('./market_data/' + company_ticker + '.csv', index_col='Date', parse_dates=True)
 	else:
 		print("fetching yf api data") #PRINT------------PRINT--------------PRINT#
 		market_data = yf.download(ts_Ticker, ts_Date_90)
+		market_data.to_csv('./market_data/' + company_ticker + '.csv', encoding='utf-8')
 	
 	print(market_data.head(3)) #PRINT------------PRINT--------------PRINT#
+	print(market_data.tail(3)) #PRINT------------PRINT--------------PRINT#
 	# print("Market data length: " + str(len(market_data.index))) #PRINT------------PRINT--------------PRINT#
 	if market_data.empty:
 		exit(ts_Ticker + ": No data found, symbol may be delisted")
@@ -345,11 +352,16 @@ index_names = ["SP500", "FTSE100", "FTSE250", "FTSE350"]
 index_symbls = ["^GSPC", "^FTSE", "^FTMC", "^FTAS"]
 for indx, symbl in enumerate(index_symbls):
 	print(symbl) #PRINT------------PRINT--------------PRINT#
-	idf = yf.download(symbl, init_ts_date)  # use global initial transaction date
+	symbl_name = index_names[indx]
+	if offline == True:
+		idf = pd.read_csv('./market_data/' + symbl_name + '.csv', index_col='Date', parse_dates=True)
+	else:
+		idf = yf.download(symbl, init_ts_date)  # use global initial transaction date
+		idf.to_csv('./market_data/' + symbl_name + '.csv', encoding='utf-8')
+	
 	idf = idf[['Close']]
 	init_val = idf.iloc[0, 0]
 	idf = idf.assign(Percent = idf['Close'].map(lambda x: ((x - init_val) / init_val) * 100))
-	symbl_name = index_names[indx]
 	idf.columns = [symbl_name + "_Close", symbl_name + "_Percent"]
 
 	if indx == 0:
