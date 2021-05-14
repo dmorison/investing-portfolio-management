@@ -25,6 +25,7 @@ print(df)
 # init_date = transactions.iloc[0, 0]
 # print(init_date)
 
+### getting previous date x number days before:
 # init_date = pd.to_datetime("2020-09-01")
 # print(init_date)
 # init_date_90 = init_date - pd.to_timedelta(93, unit='d')
