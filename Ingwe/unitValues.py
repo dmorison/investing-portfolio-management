@@ -36,12 +36,8 @@ df = ts_df.groupby(ts_df.index).agg({'unitpurchase':'sum', 'Amount':'sum', 'Cash
 # df = df_cash_balance.groupby(df_cash_balance.index).tail(1)
 print(df.head(10)) #PRINT------------PRINT--------------PRINT#
 df1 = performance.join(df, how='outer')
-# performance_cols = ['Total_invested', 'Total_profit', 'Performance', 'Cash_balance]
-# for col in ['Total_invested', 'Total_profit', 'Performance']:
-#     df1[col].fillna(method='ffill', inplace=True)
-df1['Total_invested'].fillna(method='ffill', inplace=True)
-df1['Total_profit'].fillna(method='ffill', inplace=True)
-df1['Cash_balance'].fillna(method='ffill', inplace=True)
+
+df1.update(df1[['Total_invested', 'Total_profit', 'Cash_balance']].fillna(method='ffill'))
 df1['unitpurchase'].fillna(0, inplace=True)
 df1 = df1.assign(Investment_value = df1['Total_invested'].fillna(0) + df1['Total_profit'].fillna(0))
 df1 = df1.assign(NAV = df1['Cash_balance'] + df1['Investment_value'])
@@ -50,6 +46,7 @@ unit_val = 1
 total_units = 0
 df1 = df1.assign(units_purchased = df1.apply(lambda x: calc_units_purchased(row = x, val = 'purchased'), axis=1))
 df1 = df1.assign(units_cumsum = df1['units_purchased'].cumsum())
+df1.update(df1[['Year_week', 'Performance', 'SP500_Percent', 'FTSE100_Percent', 'FTSE250_Percent', 'FTSE350_Percent']].fillna(method='ffill'))
 print(df1) #PRINT------------PRINT--------------PRINT#
 
 print(df1.info()) #PRINT------------PRINT--------------PRINT#

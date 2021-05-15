@@ -304,6 +304,13 @@ Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 # insert the weekday names column
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
+# create Year_week column values and insert them into Totals_df
+totals_year_week_col_values = (Totals_df.index.year).astype(str) + '_' + (Totals_df.index.week).astype(str)
+Totals_df.insert(loc=1, column='Year_week', value=totals_year_week_col_values)
+# set a Date column to be later reset as the index column
+Totals_df = Totals_df.assign(Date = Totals_df.index)
+# create the Totals_weeks_df
+Totals_weeks_df = Totals_df.groupby(Totals_df['Year_week']).tail(1)
 
 # get indices market data and create indices percentage df to join onto pf daily dataframe
 indices_df = None
@@ -328,23 +335,32 @@ for indx, symbl in enumerate(index_symbls):
 	else:
 		indices_df = indices_df.join(idf, how="outer")
 
-print(indices_df.head()) #PRINT------------PRINT--------------PRINT#
-print(indices_df.info()) #PRINT------------PRINT--------------PRINT#
+# print(indices_df.head()) #PRINT------------PRINT--------------PRINT#
+# print(indices_df.info()) #PRINT------------PRINT--------------PRINT#
 
 indices_percent_df = indices_df[['SP500_Percent', 'FTSE100_Percent', 'FTSE250_Percent', 'FTSE350_Percent']]
+indices_percent_df.fillna(method='ffill', inplace=True)
+# create Year_week column values and insert them into indices_percent_df
+indices_year_week_col_values = (indices_percent_df.index.year).astype(str) + '_' + (indices_percent_df.index.week).astype(str)
+indices_percent_df.insert(loc=0, column='Year_week', value=indices_year_week_col_values)
+# create the indices_percent_weeks_df
+indices_percent_weeks_df = indices_percent_df.groupby(indices_percent_df['Year_week']).tail(1)
 
+# merge the two weekly dataframes
+Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week")
+# reset the index to the Date column values
+Totals_df_weeks.set_index('Date', inplace=True)
+Totals_df_weeks.drop(['Weekday'], axis=1, inplace=True)
+print(Totals_df_weeks.head()) #PRINT------------PRINT--------------PRINT#
+
+# remove the Date and Year_week columns before joining the two daily dataframes on the index/dates
+Totals_df.drop('Date', axis=1, inplace=True)
+indices_percent_df.drop('Year_week', axis=1, inplace=True)
 Totals_df = Totals_df.join(indices_percent_df, how="outer")
+print(Totals_df.head()) #PRINT------------PRINT--------------PRINT#
 
-# create dataframe of weeks
-Totals_df_weeks = Totals_df.loc[Totals_df['Weekday'] == "Friday"]
-Totals_df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
-
-print(Totals_df.head())
-print(Totals_df.tail())
-print(Totals_df.info())
-print(Totals_df_weeks.head())
-print(Totals_df_weeks.tail())
-print(Totals_df_weeks.info())
+print(Totals_df_weeks.info()) #PRINT------------PRINT--------------PRINT#
+print(Totals_df.info()) #PRINT------------PRINT--------------PRINT#
 # write performance dataframe with total cost and profit to csv
 Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
