@@ -304,6 +304,43 @@ Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 # insert the weekday names column
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
+
+# calculate to to dates performances
+lastValue_ytd = None
+currentYear = pd.datetime.now().year
+def firstDateOfYear(a, b):
+	global lastValue_ytd
+	global currentYear
+	if a < currentYear:
+		lastValue_ytd = b
+
+Totals_df['Year'] = Totals_df.index.year
+Totals_df.apply(lambda x: firstDateOfYear(a = x['Year'], b = x['Performance']), axis=1)
+Totals_df.drop(['Year'], axis=1, inplace=True)
+print(lastValue_ytd)
+
+lastDate = Totals_df.index[-1]
+lastDateLoc = Totals_df.index.get_loc(lastDate)
+lastValue = Totals_df['Performance'].iloc[lastDateLoc]
+
+def lastValueFunction(x):
+	global Totals_df
+	global lastDate
+	lastDate_return = lastDate - pd.to_timedelta(x, unit='d')
+	lastDateLoc_return = Totals_df.index.get_loc(lastDate_return)
+	return Totals_df['Performance'].iloc[lastDateLoc_return]
+
+percent_wk = lastValue - lastValueFunction(7)
+percent_mth = lastValue - lastValueFunction(31)
+percent_ytd = lastValue - lastValue_ytd
+percent_6mth = lastValue - lastValueFunction(182)
+percent_yr = lastValue - lastValueFunction(365)
+
+performance_data = np.array([["Week", percent_wk], ["Month", percent_mth], ["Year_to_date", percent_ytd], ["6_Months", percent_6mth], ["Year", percent_yr]])
+performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
+print(performance_df)
+performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
+
 # create Year_week column values and insert them into Totals_df
 totals_year_week_col_values = (Totals_df.index.year).astype(str) + '_' + (Totals_df.index.week).astype(str)
 Totals_df.insert(loc=1, column='Year_week', value=totals_year_week_col_values)
@@ -356,7 +393,7 @@ print(Totals_df_weeks.head()) #PRINT------------PRINT--------------PRINT#
 # remove the Date and Year_week columns before joining the two daily dataframes on the index/dates
 Totals_df.drop('Date', axis=1, inplace=True)
 indices_percent_df.drop('Year_week', axis=1, inplace=True)
-Totals_df = Totals_df.join(indices_percent_df, how="outer")
+Totals_df = Totals_df.join(indices_percent_df, how="outer")  # think about ffill indices values to fill in gaps
 print(Totals_df.head()) #PRINT------------PRINT--------------PRINT#
 
 print(Totals_df_weeks.info()) #PRINT------------PRINT--------------PRINT#
