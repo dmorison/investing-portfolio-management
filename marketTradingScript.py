@@ -1,3 +1,12 @@
+# Script to create individual stock datasets of the stock market performance as a percent together with when and how much of the stock was purchased/(sold)
+# All individual stocks datasets are combined to create one large expanded dataset
+# Input data:
+#  - /input_data/transactions.csv
+#  - /stock_market_trading/<<stock>>
+# Output data:
+#  - /stock_market_trading/<<stock>>
+#  - /portfolio_performance/all_companies_trading_performance.csv
+
 import pandas as pd
 import numpy as np
 
@@ -15,9 +24,9 @@ for indx, company in enumerate(tickers):
     company_transactions = transactions[transactions['Ticker'] == company]  # get transactions for company from all transactions
     print(company_transactions) #PRINT------------PRINT--------------PRINT#
 
-    init_date = market_data.iloc[0, 0]
-    print(init_date) #PRINT------------PRINT--------------PRINT#
-    market_data = market_data.assign(Percent = market_data['Close'].map(lambda x: ((x - init_date) / init_date) * 100))
+    init_date_close = market_data.iloc[0, 0]
+    print(init_date_close) #PRINT------------PRINT--------------PRINT#
+    market_data = market_data.assign(Percent = market_data['Close'].map(lambda x: ((x - init_date_close) / init_date_close) * 100))
 
     company_name = company_transactions['Company'].iloc[0]
     company_transactions = company_transactions[['Total_ts_cost']]

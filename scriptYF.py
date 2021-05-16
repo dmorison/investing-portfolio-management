@@ -305,6 +305,7 @@ Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
 
+# calculate to to dates performances
 lastValue_ytd = None
 currentYear = pd.datetime.now().year
 def firstDateOfYear(a, b):
