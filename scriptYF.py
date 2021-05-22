@@ -220,7 +220,7 @@ for indx, symbl in enumerate(tickers):
 	df_weeks.insert(loc=0, column='Company', value=company_name)  # insert the company name into the weekly data
 	# print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	# df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
+	df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 	# df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
@@ -308,7 +308,6 @@ Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
 
 # calculate to to dates performances
 Totals_df = Totals_df.assign(Market_value = Totals_df['Total_invested'] + Totals_df['Total_profit'])
-Totals_df = Totals_df.assign(Profit_diff = Totals_df['Total_profit'].diff())
 Totals_df = Totals_df.assign(Invested_diff = Totals_df['Total_invested'].diff())
 Totals_df.reset_index(inplace=True)
 Totals_df.set_index('Date', drop=False, inplace=True)
@@ -320,7 +319,6 @@ def timePeriodYieldsFunc(days, date, totalProfit):
 	global firstDate
 	global lastdayofyear
 	if (days == 0):
-		# lastdayofyear = date
 		if (date.year == firstDate.year):
 			sinceDate = firstDate
 			lastdayofyear = date
@@ -333,11 +331,12 @@ def timePeriodYieldsFunc(days, date, totalProfit):
 	else:
 		sinceDate = date - pd.to_timedelta(days, unit='d')
 
-	# uncomment below to get unfound previous dates to fill gaps - performance issue
-	# if (sinceDate not in Totals_df.values):
-	# 	sinceDate = date - pd.to_timedelta((days-1), unit='d')
-	# 	if (sinceDate not in Totals_df.values):
-	# 		sinceDate = date - pd.to_timedelta((days-2), unit='d')
+	# performance fix needed
+	if (days > 7):
+		if (sinceDate not in Totals_df.values):
+			sinceDate = date - pd.to_timedelta((days-1), unit='d')
+			if (sinceDate not in Totals_df.values):
+				sinceDate = date - pd.to_timedelta((days-2), unit='d')
 	
 	returnVal = np.nan
 	if (sinceDate in Totals_df.values):
@@ -353,6 +352,7 @@ Totals_df = Totals_df.assign(Weekly_yield = Totals_df.apply(lambda x: timePeriod
 Totals_df = Totals_df.assign(Monthly_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(31, x['Date'], x['Total_profit']), axis=1))
 Totals_df = Totals_df.assign(Annual_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(365, x['Date'], x['Total_profit']), axis=1))
 Totals_df = Totals_df.assign(ytd_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(0, x['Date'], x['Total_profit']), axis=1))
+Totals_df.drop(['Date'], axis=1, inplace=True)
 print(Totals_df)
 # Totals_df.to_csv(portfolio + '/portfolio_performance/test_3.csv', float_format='%.2f', encoding='utf-8')
 
@@ -364,7 +364,6 @@ ytd_yield = Totals_df['ytd_yield'].iloc[-1]
 performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["Year_to_date", ytd_yield]])
 performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
 print(performance_df)
-exit()
 # performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
 
 # create Year_week column values and insert them into Totals_df
