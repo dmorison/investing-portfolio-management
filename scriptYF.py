@@ -9,7 +9,7 @@ import numpy as np
 dave = "./Dave"
 ingwe = "./Ingwe"
 portfolio = ingwe
-offline = False
+offline = True
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
@@ -107,7 +107,7 @@ def get_company_data(xyz):
 		df = market_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
 	#====================================================#
 
-	df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8')
+	# df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8')
 	
 	# seperate US stocks to calculate Market value and Cost to be able to factor in exchange rate
 	if market(company) == "US":
@@ -194,7 +194,8 @@ pf = None
 summary_wow = None
 
 # list of companies to use
-tickers = transactions.Ticker.unique()
+# tickers = transactions.Ticker.unique()
+tickers = ['LON:CRST', 'NYSE:BRK-B']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
 	print("---------------- Company " + str(num_companies + 1) + " of " + str(len(tickers)) + " ----------------") #PRINT------------PRINT--------------PRINT#
@@ -219,8 +220,8 @@ for indx, symbl in enumerate(tickers):
 	df_weeks.insert(loc=0, column='Company', value=company_name)  # insert the company name into the weekly data
 	# print(df.info()) #PRINT------------PRINT--------------PRINT#
 	# write company data to csv file
-	df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
-	df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
+	# df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
+	# df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + company_ticker
@@ -268,9 +269,9 @@ summary_yield = (summary_profit / summary_cost) * 100  # currently not being use
 
 summary_df = summary_df.assign(Portfolio_weighting = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
 print(summary_df)
-summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
+# summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
 print(summary_wow)
-summary_wow.to_csv(portfolio + '/portfolio_performance/companies_wow_performance.csv', float_format='%.2f', encoding='utf-8')
+# summary_wow.to_csv(portfolio + '/portfolio_performance/companies_wow_performance.csv', float_format='%.2f', encoding='utf-8')
 
 pf.fillna(method='ffill', inplace=True)
 print(pf.info()) #PRINT------------PRINT--------------PRINT#
@@ -306,40 +307,65 @@ totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
 
 # calculate to to dates performances
-lastValue_ytd = None
-currentYear = pd.datetime.now().year
-def firstDateOfYear(a, b):
-	global lastValue_ytd
-	global currentYear
-	if a < currentYear:
-		lastValue_ytd = b
+Totals_df = Totals_df.assign(Market_value = Totals_df['Total_invested'] + Totals_df['Total_profit'])
+Totals_df = Totals_df.assign(Profit_diff = Totals_df['Total_profit'].diff())
+Totals_df = Totals_df.assign(Invested_diff = Totals_df['Total_invested'].diff())
+Totals_df.reset_index(inplace=True)
+Totals_df.set_index('Date', drop=False, inplace=True)
 
-Totals_df['Year'] = Totals_df.index.year
-Totals_df.apply(lambda x: firstDateOfYear(a = x['Year'], b = x['Performance']), axis=1)
-Totals_df.drop(['Year'], axis=1, inplace=True)
-print(lastValue_ytd)
-
-lastDate = Totals_df.index[-1]
-lastDateLoc = Totals_df.index.get_loc(lastDate)
-lastValue = Totals_df['Performance'].iloc[lastDateLoc]
-
-def lastValueFunction(x):
+firstDate = Totals_df.iloc[0, 0]
+lastdayofyear = firstDate
+def timePeriodYieldsFunc(days, date, totalProfit):
 	global Totals_df
-	global lastDate
-	lastDate_return = lastDate - pd.to_timedelta(x, unit='d')
-	lastDateLoc_return = Totals_df.index.get_loc(lastDate_return)
-	return Totals_df['Performance'].iloc[lastDateLoc_return]
+	global firstDate
+	global lastdayofyear
+	if (days == 0):
+		# lastdayofyear = date
+		if (date.year == firstDate.year):
+			sinceDate = firstDate
+			lastdayofyear = date
+		else:
+			if (date.year > lastdayofyear.year):
+				sinceDate = lastdayofyear
+				lastdayofyear = date
+			else:
+				sinceDate = lastdayofyear
+	else:
+		sinceDate = date - pd.to_timedelta(days, unit='d')
 
-percent_wk = lastValue - lastValueFunction(7)
-percent_mth = lastValue - lastValueFunction(31)
-percent_ytd = lastValue - lastValue_ytd
-percent_6mth = lastValue - lastValueFunction(182)
-percent_yr = lastValue - lastValueFunction(365)
+	# uncomment below to get unfound previous dates to fill gaps - performance issue
+	# if (sinceDate not in Totals_df.values):
+	# 	sinceDate = date - pd.to_timedelta((days-1), unit='d')
+	# 	if (sinceDate not in Totals_df.values):
+	# 		sinceDate = date - pd.to_timedelta((days-2), unit='d')
+	
+	returnVal = np.nan
+	if (sinceDate in Totals_df.values):
+		temp_df = Totals_df.loc[(Totals_df['Date'] >= sinceDate) & (Totals_df['Date'] <= date)]
+		sum_id = temp_df['Invested_diff'].sum(skipna=True)
+		previousTotalProfit = Totals_df.loc[Totals_df['Date'] == sinceDate, 'Total_profit'].values[0]
+		profitDiff = totalProfit - previousTotalProfit
+		previousMarketValue = Totals_df.loc[Totals_df['Date'] == sinceDate, 'Market_value'].values[0]
+		returnVal = (profitDiff / (previousMarketValue + sum_id)) * 100
+	return returnVal
 
-performance_data = np.array([["Week", percent_wk], ["Month", percent_mth], ["Year_to_date", percent_ytd], ["6_Months", percent_6mth], ["Year", percent_yr]])
+Totals_df = Totals_df.assign(Weekly_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(7, x['Date'], x['Total_profit']), axis=1))
+Totals_df = Totals_df.assign(Monthly_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(31, x['Date'], x['Total_profit']), axis=1))
+Totals_df = Totals_df.assign(Annual_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(365, x['Date'], x['Total_profit']), axis=1))
+Totals_df = Totals_df.assign(ytd_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(0, x['Date'], x['Total_profit']), axis=1))
+print(Totals_df)
+# Totals_df.to_csv(portfolio + '/portfolio_performance/test_3.csv', float_format='%.2f', encoding='utf-8')
+
+Weekly_yield = Totals_df['Weekly_yield'].iloc[-1]
+Monthly_yield = Totals_df['Monthly_yield'].iloc[-1]
+Annual_yield = Totals_df['Annual_yield'].iloc[-1]
+ytd_yield = Totals_df['ytd_yield'].iloc[-1]
+
+performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["Year_to_date", ytd_yield]])
 performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
 print(performance_df)
-performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
+exit()
+# performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
 
 # create Year_week column values and insert them into Totals_df
 totals_year_week_col_values = (Totals_df.index.year).astype(str) + '_' + (Totals_df.index.week).astype(str)
@@ -399,7 +425,7 @@ print(Totals_df.head()) #PRINT------------PRINT--------------PRINT#
 print(Totals_df_weeks.info()) #PRINT------------PRINT--------------PRINT#
 print(Totals_df.info()) #PRINT------------PRINT--------------PRINT#
 # write performance dataframe with total cost and profit to csv
-Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
-Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+# Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
+# Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 print("--------------- PORTFOLIO CALCULATIONS COMPLETE ---------------") #PRINT------------PRINT--------------PRINT#
 # to try when writing to csv: date_format='%Y-%m-%d'
