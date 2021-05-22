@@ -7,8 +7,8 @@ ingwe = "./Ingwe"
 portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
-# tickers = transactions.Ticker.unique()
-tickers = ['LON:CRST', 'NYSE:BRK-B']
+tickers = transactions.Ticker.unique()
+# tickers = ['LON:CRST', 'NYSE:BRK-B']
 
 summary_df = None
 
@@ -70,17 +70,12 @@ for indx, company in enumerate(tickers):
     df.set_index('Date', inplace=True)
     print(df.head())
     print(df.tail())
-    # df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
-    Company_value = transactions.loc[transactions['Ticker'] == company, 'Company'].iloc[0]
-    Weekly_profit = df['Weekly_profit'].iloc[-1]
-    Weekly_yield = df['Weekly_yield'].iloc[-1]
-    Monthly_yield = df['Monthly_yield'].iloc[-1]
-    Annual_yield = df['Annual_yield'].iloc[-1]
-    ytd_yield = df['ytd_yield'].iloc[-1]
+    Company_name = transactions.loc[transactions['Ticker'] == company, 'Company'].iloc[0]
 
     stock_summary_df = df[['Weekly_profit', 'Weekly_yield', 'Monthly_yield', 'Annual_yield', 'ytd_yield']].tail(1)
-    stock_summary_df.insert(loc=0, column='Company', value=Company_value)
+    stock_summary_df.insert(loc=0, column='Company', value=Company_name)
     print(stock_summary_df)
 
     if indx == 0:
@@ -88,9 +83,5 @@ for indx, company in enumerate(tickers):
     else:
         summary_df = summary_df.append(stock_summary_df)
 
-    # performance_data = np.array([["Week_profit", Weekly_profit], ["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["Year_to_date", ytd_yield]])
-    # performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
-    # print(performance_df)
-    # performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
-
 print(summary_df)
+summary_df.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
