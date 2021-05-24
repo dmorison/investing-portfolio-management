@@ -88,8 +88,6 @@ def get_company_data(xyz):
 	ts_Cost_per_share_ave = ts['Cost_per_share_ave']
 
 	print("First purchased: " + str(ts_Date)) #PRINT------------PRINT--------------PRINT#
-	ts_Date_90 = ts_Date - pd.to_timedelta(90, unit='d')
-	print("90 days before first purchased: " + str(ts_Date_90)) #PRINT------------PRINT--------------PRINT#
 	#====================================================#
 	# get market data only necessary for first transaction
 	if offline == True:
@@ -97,7 +95,7 @@ def get_company_data(xyz):
 		market_data = pd.read_csv('./market_data/' + company_ticker + '.csv', index_col='Date', parse_dates=True)
 	else:
 		print("fetching yf api data") #PRINT------------PRINT--------------PRINT#
-		market_data = yf.download(ts_Ticker, ts_Date_90)
+		market_data = yf.download(ts_Ticker, ts_Date)
 		market_data.to_csv('./market_data/' + company_ticker + '.csv', encoding='utf-8')
 	
 	print(market_data.head(3)) #PRINT------------PRINT--------------PRINT#
@@ -110,10 +108,6 @@ def get_company_data(xyz):
 	#====================================================#
 
 	df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8')
-
-	ts_Date_loc = df.index.get_loc(ts_Date)
-	df = df.iloc[ts_Date_loc: , :]
-	# print(df.head(3)) #PRINT------------PRINT--------------PRINT#
 	
 	# seperate US stocks to calculate Market value and Cost to be able to factor in exchange rate
 	if market(company) == "US":
@@ -141,7 +135,7 @@ def get_company_data(xyz):
 	df.insert(loc=0, column='Weekday', value=week_day_col_values)
 	year_week_col_values = (df.index.year).astype(str) + '_' + (df.index.week).astype(str)
 	df.insert(loc=1, column='Year_week', value=year_week_col_values)
-	print(df.tail(30)) #PRINT------------PRINT--------------PRINT#
+	print(df.tail()) #PRINT------------PRINT--------------PRINT#
 
 # using all following transactions, break up initial df into chuncks to rebase calculations for each transactions and concatenate them back together
 def build_data(x):
@@ -185,30 +179,6 @@ def build_company_datasets():
 	for x in range(1, len(company_transactions.index)):
 		build_data(x)
 
-# initiate a variable that each company will be joined onto
-company_yield = None
-company_yield_weeks = None
-def build_all_companies(wxy):
-	global df
-	global company_transactions
-	global company_ticker
-	global company_yield
-	global company_yield_weeks
-	company_yield = company_ticker + "_yield"
-	company_trade = company_ticker + "_trade"
-	company_transactions_trades = company_transactions.set_index('Date')
-	company_transactions_trades = company_transactions_trades[['Total_ts_cost']]
-
-	company_yield = df[['Yield']]
-	# print(company_yield.head())
-	company_yield = company_yield.append(company_transactions_trades)
-	company_yield = company_yield.sort_index()
-	company_yield = company_yield.assign(Company = company_ticker)
-	company_yield = company_yield.assign(Year_week = (company_yield.index.year).astype(str) + '_' + (company_yield.index.week).astype(str))
-	company_yield = company_yield.assign(Week = company_yield.index)
-	company_yield_weeks = company_yield.groupby(company_yield.Year_week).agg({'Company': lambda x: x.tail(1), 'Week': lambda x: x.tail(1), 'Yield': lambda x: x.tail(1), 'Total_ts_cost':'sum'})
-	# print(company_yield_weeks)
-
 # create arrays for the last values/day for each company can be appended to
 ticker_col = []
 company_col = []
@@ -222,12 +192,9 @@ num_companies = 0
 pf = None
 # initiate a variable that will append each companies last week on week performance
 summary_wow = None
-# initiate a variable that will append each companies weekly yield and trading onto
-all_companies_weeks = None
 
 # list of companies to use
 tickers = transactions.Ticker.unique()
-# tickers = ['LON:DGE', 'NYSE:BRK-B']
 # loop through each company in the tickers list
 for indx, symbl in enumerate(tickers):
 	print("---------------- Company " + str(num_companies + 1) + " of " + str(len(tickers)) + " ----------------") #PRINT------------PRINT--------------PRINT#
@@ -255,8 +222,6 @@ for indx, symbl in enumerate(tickers):
 	df.to_csv(portfolio + '/stock_performance_daily/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 	df_weeks.to_csv(portfolio + '/stock_performance_weekly/' + company_ticker + '.csv', float_format='%.2f', encoding='utf-8')
 
-	build_all_companies(symbl)  # build the data set of all companies weekly yield and trading
-
 	# create col names for pf dataframe with company suffix
 	pf_cost_col_name = "Cost_" + company_ticker
 	pf_profit_col_name = "Profit_" + company_ticker
@@ -267,7 +232,6 @@ for indx, symbl in enumerate(tickers):
 		pf = df[['Cost', 'Profit']]
 		pf.columns = [pf_cost_col_name, pf_profit_col_name]
 		summary_wow = df_weeks[['Company', 'Week_on_week_pl', 'Week_on_week_yield']].tail(1)
-		all_companies_weeks = company_yield_weeks.copy(deep=True)
 		num_companies = 1
 	else:
 		pf_1 = df[['Cost', 'Profit']]
@@ -275,7 +239,6 @@ for indx, symbl in enumerate(tickers):
 		pf = pf.join(pf_1, how="outer")
 		company_wow = df_weeks[['Company', 'Week_on_week_pl', 'Week_on_week_yield']].tail(1)
 		summary_wow = summary_wow.append(company_wow)
-		all_companies_weeks = all_companies_weeks.append(company_yield_weeks)
 		num_companies = num_companies + 1
 	
 	# append the last row/day values of the company to the appropriate array
@@ -287,10 +250,6 @@ for indx, symbl in enumerate(tickers):
 	profit_col.append(df['Profit'].iloc[-1])
 	yield_col.append(df['Yield'].iloc[-1])
 	print("================ COMPANY COMPLETE ================") #PRINT------------PRINT--------------PRINT#
-
-all_companies_weeks.replace(0, np.nan, inplace=True)
-print(all_companies_weeks) #PRINT------------PRINT--------------PRINT#
-all_companies_weeks.to_csv(portfolio + '/portfolio_performance/all_companies_expanded_weekly_trading_yield.csv', float_format='%.2f', encoding='utf-8')
 
 # create a summary dataframe of all the arrays built up from each company
 summary_data = {'Ticker': ticker_col,
@@ -346,6 +305,50 @@ Totals_df = pf[['Total_invested', 'Total_profit', 'Performance']]
 totals_week_days = Totals_df.index.weekday_name
 Totals_df.insert(loc=0, column='Weekday', value=totals_week_days)
 
+# calculate to to dates performances
+lastValue_ytd = None
+currentYear = pd.datetime.now().year
+def firstDateOfYear(a, b):
+	global lastValue_ytd
+	global currentYear
+	if a < currentYear:
+		lastValue_ytd = b
+
+Totals_df['Year'] = Totals_df.index.year
+Totals_df.apply(lambda x: firstDateOfYear(a = x['Year'], b = x['Performance']), axis=1)
+Totals_df.drop(['Year'], axis=1, inplace=True)
+print(lastValue_ytd)
+
+lastDate = Totals_df.index[-1]
+lastDateLoc = Totals_df.index.get_loc(lastDate)
+lastValue = Totals_df['Performance'].iloc[lastDateLoc]
+
+def lastValueFunction(x):
+	global Totals_df
+	global lastDate
+	lastDate_return = lastDate - pd.to_timedelta(x, unit='d')
+	lastDateLoc_return = Totals_df.index.get_loc(lastDate_return)
+	return Totals_df['Performance'].iloc[lastDateLoc_return]
+
+percent_wk = lastValue - lastValueFunction(7)
+percent_mth = lastValue - lastValueFunction(31)
+percent_ytd = lastValue - lastValue_ytd
+percent_6mth = lastValue - lastValueFunction(182)
+percent_yr = lastValue - lastValueFunction(365)
+
+performance_data = np.array([["Week", percent_wk], ["Month", percent_mth], ["Year_to_date", percent_ytd], ["6_Months", percent_6mth], ["Year", percent_yr]])
+performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
+print(performance_df)
+performance_df.to_csv(portfolio + '/portfolio_performance/time_to_date_performance.csv', float_format='%.2f', encoding='utf-8')
+
+# create Year_week column values and insert them into Totals_df
+totals_year_week_col_values = (Totals_df.index.year).astype(str) + '_' + (Totals_df.index.week).astype(str)
+Totals_df.insert(loc=1, column='Year_week', value=totals_year_week_col_values)
+# set a Date column to be later reset as the index column
+Totals_df = Totals_df.assign(Date = Totals_df.index)
+# create the Totals_weeks_df
+Totals_weeks_df = Totals_df.groupby(Totals_df['Year_week']).tail(1)
+
 # get indices market data and create indices percentage df to join onto pf daily dataframe
 indices_df = None
 index_names = ["SP500", "FTSE100", "FTSE250", "FTSE350"]
@@ -369,23 +372,32 @@ for indx, symbl in enumerate(index_symbls):
 	else:
 		indices_df = indices_df.join(idf, how="outer")
 
-print(indices_df.head()) #PRINT------------PRINT--------------PRINT#
-print(indices_df.info()) #PRINT------------PRINT--------------PRINT#
+# print(indices_df.head()) #PRINT------------PRINT--------------PRINT#
+# print(indices_df.info()) #PRINT------------PRINT--------------PRINT#
 
 indices_percent_df = indices_df[['SP500_Percent', 'FTSE100_Percent', 'FTSE250_Percent', 'FTSE350_Percent']]
+indices_percent_df.fillna(method='ffill', inplace=True)
+# create Year_week column values and insert them into indices_percent_df
+indices_year_week_col_values = (indices_percent_df.index.year).astype(str) + '_' + (indices_percent_df.index.week).astype(str)
+indices_percent_df.insert(loc=0, column='Year_week', value=indices_year_week_col_values)
+# create the indices_percent_weeks_df
+indices_percent_weeks_df = indices_percent_df.groupby(indices_percent_df['Year_week']).tail(1)
 
-Totals_df = Totals_df.join(indices_percent_df, how="outer")
+# merge the two weekly dataframes
+Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week")
+# reset the index to the Date column values
+Totals_df_weeks.set_index('Date', inplace=True)
+Totals_df_weeks.drop(['Weekday'], axis=1, inplace=True)
+print(Totals_df_weeks.head()) #PRINT------------PRINT--------------PRINT#
 
-# create dataframe of weeks
-Totals_df_weeks = Totals_df.loc[Totals_df['Weekday'] == "Friday"]
-Totals_df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
+# remove the Date and Year_week columns before joining the two daily dataframes on the index/dates
+Totals_df.drop('Date', axis=1, inplace=True)
+indices_percent_df.drop('Year_week', axis=1, inplace=True)
+Totals_df = Totals_df.join(indices_percent_df, how="outer")  # think about ffill indices values to fill in gaps
+print(Totals_df.head()) #PRINT------------PRINT--------------PRINT#
 
-print(Totals_df.head())
-print(Totals_df.tail())
-print(Totals_df.info())
-print(Totals_df_weeks.head())
-print(Totals_df_weeks.tail())
-print(Totals_df_weeks.info())
+print(Totals_df_weeks.info()) #PRINT------------PRINT--------------PRINT#
+print(Totals_df.info()) #PRINT------------PRINT--------------PRINT#
 # write performance dataframe with total cost and profit to csv
 Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
 Totals_df_weeks.to_csv(portfolio + '/portfolio_performance/weekly_portfolio_performance.csv', float_format='%.2f', encoding='utf-8')
