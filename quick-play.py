@@ -1,5 +1,45 @@
 import pandas as pd
-import yfinance as yf
+import numpy as np
+# import yfinance as yf
+
+market_data = pd.read_csv('./Ingwe/stock_performance_daily/CRST.csv', index_col=False, parse_dates=['Date'])
+print(market_data.tail(10))
+df = market_data['Profit'].iloc[-1]
+print(df)
+
+# def previousValuesFunction(days, date, val):
+#     global market_data
+#     print(days)
+#     print(date)
+#     print(val)
+
+#     # currentVal = market_data[market_data['Date'] == date][val]
+#     currentVal = market_data.loc[market_data['Date'] == date, val].values[0]
+#     print(currentVal)
+#     previousDate = date - pd.to_timedelta(days, unit='d')
+#     print(previousDate)
+#     # exists = previousDate in market_data.values
+#     returnVal = np.nan
+#     if (previousDate in market_data.values):
+#         print("date exists")
+#         previousVal = market_data.loc[market_data['Date'] == previousDate, val].values[0]
+#         print(previousVal)
+#         returnVal = currentVal - previousVal
+    
+#     print(returnVal)
+#     return returnVal
+
+# rowNum = 8
+# result = previousValuesFunction(7, market_data.iloc[rowNum]['Date'], 'Profit')
+# print(result)
+
+# curryear = pd.datetime.now().year
+# today = pd.datetime.now()
+# print(today)
+# first = today.replace(year=curryear)
+# print(first)
+# lastMonth = first - pd.to_timedelta(1, unit='d')
+# print(lastMonth)
 
 # df = pd.read_csv("./Ingwe/daily_unit_value.csv", index_col="Date")
 # print(df)
@@ -13,8 +53,8 @@ import yfinance as yf
 # print(transactions)
 
 # symbl = 'LON:ULVR'
-df = yf.download("ULVR.L", '2019-02-26')
-print(df)
+# df = yf.download("ULVR.L", '2019-02-26')
+# print(df)
 # row1 = transactions.loc[transactions['Ticker'] == symbl, 'Company'].values[0]
 # print(row1)
 
