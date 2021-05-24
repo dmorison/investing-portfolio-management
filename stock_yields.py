@@ -70,18 +70,33 @@ for indx, company in enumerate(tickers):
     df.set_index('Date', inplace=True)
     print(df.head())
     print(df.tail())
-    df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    # df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
     Company_name = transactions.loc[transactions['Ticker'] == company, 'Company'].iloc[0]
+    Company_shares = transactions.loc[transactions['Ticker'] == company, 'Quantity'].sum()
+    Cost_per_share = transactions.loc[transactions['Ticker'] == company, 'Cost_per_share_ave'].iloc[-1]
+    company_transactions = transactions[transactions['Ticker'] == company]
+    Count_trades = len(transactions[transactions['Ticker'] == company].index)
 
-    stock_summary_df = df[['Weekly_profit', 'Weekly_yield', 'Monthly_yield', 'Annual_yield', 'ytd_yield']].tail(1)
+    stock_summary_df = df[['Close', 'Cost', 'Market_value', 'Profit', 'Yield', 'Weekly_profit', 'Weekly_yield', 'Monthly_yield', 'Annual_yield', 'ytd_yield']].tail(1)
     stock_summary_df.insert(loc=0, column='Company', value=Company_name)
+    stock_summary_df.insert(loc=0, column='Ticker', value=company)
+    stock_summary_df.insert(loc=3, column='Total_shares', value=Company_shares)
+    stock_summary_df.insert(loc=4, column='Average_share_price', value=Cost_per_share)
+    stock_summary_df['Number_of_trades'] = Count_trades
     print(stock_summary_df)
 
     if indx == 0:
         summary_df = stock_summary_df.copy(deep=True)
     else:
         summary_df = summary_df.append(stock_summary_df)
+
+summary_cost = summary_df['Cost'].sum()
+summary_value = summary_df['Market_value'].sum()
+summary_profit = summary_value - summary_cost  # not in use
+summary_yield = (summary_profit / summary_cost) * 100  # not in use
+summary_df = summary_df.assign(Percent_of_portfolio = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
+summary_df = summary_df.assign(Percent_of_total_return = summary_df['Profit'].map(lambda x: ((x / summary_profit) * 100) if x > 0 else np.nan))
 
 print(summary_df)
 summary_df.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
