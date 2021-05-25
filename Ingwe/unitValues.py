@@ -39,11 +39,11 @@ ts_df.drop(['symbol', 'value', 'typeid', 'quantity', 'price'], axis=1, inplace=T
 
 df = ts_df.groupby(ts_df.index).agg({'unitpurchase':'sum', 'Amount':'sum', 'Cash_balance': lambda x: x.tail(1), 'Dividend':'sum'})
 # df = df_cash_balance.groupby(df_cash_balance.index).tail(1)
-# print(df.head) #PRINT------------PRINT--------------PRINT#
+print(df) #PRINT------------PRINT--------------PRINT#
 df1 = performance.join(df, how='outer')
 
 df1.update(df1[['Total_invested', 'Total_profit', 'Cash_balance']].fillna(method='ffill'))
-df1['unitpurchase'].fillna(0, inplace=True)
+df1.update(df1[['Dividend', 'unitpurchase']].fillna(0))
 df1 = df1.assign(Investment_value = df1['Total_invested'].fillna(0) + df1['Total_profit'].fillna(0))
 df1 = df1.assign(NAV = df1['Cash_balance'] + df1['Investment_value'])
 df1 = df1.assign(unit_val = df1.apply(lambda x: calc_units_purchased(row = x, val = 'unit'), axis=1))
@@ -55,15 +55,31 @@ df1.update(df1[['Year_week', 'Performance', 'SP500_Percent', 'FTSE100_Percent', 
 # print(df1) #PRINT------------PRINT--------------PRINT#
 
 # print(df1.info()) #PRINT------------PRINT--------------PRINT#
-df1.to_csv('./portfolio_performance/daily_unit_values.csv', encoding='utf-8')
+# df1.to_csv('./portfolio_performance/daily_unit_values.csv', encoding='utf-8')
 
 # print(df1['Performance'].describe()) #PRINT------------PRINT--------------PRINT#
 # maxpf_daily = df1['Performance'].idxmax()
 # print(df1.loc[maxpf_daily]) #PRINT------------PRINT--------------PRINT#
 
-df_weeks = df1.loc[df1['Weekday'] == "Friday"]
-df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
-# print(df_weeks.head(10)) #PRINT------------PRINT--------------PRINT#
+df1 = df1.assign(Week = df1.index)
+df1.drop(['Total_invested', 'Total_profit', 'Market_value', 'Invested_diff', 'Weekly_yield', 'Monthly_yield', 'Annual_yield', 'ytd_yield', 'Amount', 'unitpurchase', 'Cash_balance', 'units_purchased', 'units_cumsum'], axis=1, inplace=True)
+print(df1)
+df_weeks = df1.groupby(df1.Year_week).agg({'Weekday': lambda x: x.tail(1),
+                                           'Performance': lambda x: x.tail(1),
+                                           'SP500_Percent': lambda x: x.tail(1),
+                                           'FTSE100_Percent': lambda x: x.tail(1),
+                                           'FTSE250_Percent': lambda x: x.tail(1),
+                                           'FTSE350_Percent': lambda x: x.tail(1),
+                                           'Dividend': 'sum',
+                                           'Investment_value': lambda x: x.tail(1),
+                                           'NAV': lambda x: x.tail(1),
+                                           'unit_val': lambda x: x.tail(1),
+                                           'Week': lambda x: x.tail(1)})
+df_weeks.set_index('Week', inplace=True)
+print(df_weeks)
+# df_weeks = df1.loc[df1['Weekday'] == "Friday"]
+# df_weeks.drop('Weekday', axis=1, inplace=True)  # remove the weekday column which would consist only of Friday
+# print(df_weeks['Dividend']) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
 df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
@@ -75,7 +91,7 @@ df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-
 # Dividend calculations
 dv_df = dv_df.loc[dv_df['typeid'] == "dividend_dom"]
 dv_df.drop('typeid', axis=1, inplace=True)
-print(dv_df)
-dv_df.to_csv('./portfolio_performance/company_dividend_payouts.csv', encoding='utf-8')
+# print(dv_df)
+# dv_df.to_csv('./portfolio_performance/company_dividend_payouts.csv', encoding='utf-8')
 
 print("================ unitValues script COMPLETE ================") #PRINT------------PRINT--------------PRINT#
