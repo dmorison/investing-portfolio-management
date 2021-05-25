@@ -15,14 +15,22 @@ ingwe = "./Ingwe"
 portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
+dividends = pd.read_csv(portfolio + '/portfolio_performance/company_dividend_payouts.csv', index_col='Date', parse_dates=True)
+dividends['symbol'] = dividends['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+print(dividends) #PRINT------------PRINT--------------PRINT#
+
 tickers = transactions.Ticker.unique()
 all_companies_weeks = None
 
 for indx, company in enumerate(tickers):
     print("---------------- Company: " + company + " ----------------") #PRINT------------PRINT--------------PRINT#
-    market_data = pd.read_csv(portfolio + '/stock_market_trading/' + company.split(':')[1] + '.csv', index_col='Date', parse_dates=True)
+    stock_symbol = company.split(':')[1]
+    market_data = pd.read_csv(portfolio + '/stock_market_trading/' + stock_symbol + '.csv', index_col='Date', parse_dates=True)
     company_transactions = transactions[transactions['Ticker'] == company]  # get transactions for company from all transactions
     print(company_transactions) #PRINT------------PRINT--------------PRINT#
+    company_dividends = dividends[dividends['symbol'] == stock_symbol]
+    print(company_dividends) #PRINT------------PRINT--------------PRINT#
+    company_dividends.drop('symbol', axis=1, inplace=True)
 
     init_date_close = market_data.iloc[0, 0]
     print(init_date_close) #PRINT------------PRINT--------------PRINT#
@@ -32,10 +40,20 @@ for indx, company in enumerate(tickers):
     company_transactions = company_transactions[['Total_ts_cost']]
     df = market_data.join(company_transactions, how="outer")
 
+    df = df.join(company_dividends, how="outer")
+    print(df)
+
     df.insert(loc=0, column='Company', value=company_name)
     df = df.assign(Year_week = (df.index.year).astype(str) + '_' + (df.index.week).astype(str))
     df = df.assign(Week = df.index)
-    df_weeks = df.groupby(df.Year_week).agg({'Company': lambda x: x.tail(1), 'Week': lambda x: x.tail(1), 'Close': lambda x: x.tail(1), 'Percent': lambda x: x.tail(1), 'Total_ts_cost':'sum'})
+    df_weeks = df.groupby(df.Year_week).agg({'Company': lambda x: x.tail(1),
+                                             'Week': lambda x: x.tail(1),
+                                             'Close': lambda x: x.tail(1),
+                                             'Percent': lambda x: x.tail(1),
+                                             'Total_ts_cost':'sum',
+                                             'dividend':'sum',
+                                             'quantity':'sum',
+                                             'price':'sum'})
 
     if indx == 0:
         all_companies_weeks = df_weeks.copy(deep=True)
@@ -45,7 +63,7 @@ for indx, company in enumerate(tickers):
 
     df.drop('Year_week', axis=1, inplace=True)
     df.drop('Week', axis=1, inplace=True)
-    df.to_csv(portfolio + '/stock_market_trading/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    df.to_csv(portfolio + '/stock_market_trading/' + stock_symbol + '.csv', float_format='%.2f', encoding='utf-8')
 
 all_companies_weeks.replace(0, np.nan, inplace=True)
 print(all_companies_weeks.info()) #PRINT------------PRINT--------------PRINT#
