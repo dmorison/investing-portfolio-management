@@ -68,3 +68,5 @@ for indx, company in enumerate(tickers):
 all_companies_weeks.replace(0, np.nan, inplace=True)
 print(all_companies_weeks.info()) #PRINT------------PRINT--------------PRINT#
 all_companies_weeks.to_csv(portfolio + '/portfolio_performance/all_companies_trading_performance.csv', float_format='%.2f', encoding='utf-8')
+
+print("================ marketTradingScript COMPLETE ================") #PRINT------------PRINT--------------PRINT#

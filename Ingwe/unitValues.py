@@ -55,7 +55,7 @@ df1.update(df1[['Year_week', 'Performance', 'SP500_Percent', 'FTSE100_Percent', 
 # print(df1) #PRINT------------PRINT--------------PRINT#
 
 # print(df1.info()) #PRINT------------PRINT--------------PRINT#
-# df1.to_csv('./portfolio_performance/daily_unit_values.csv', encoding='utf-8')
+df1.to_csv('./portfolio_performance/daily_unit_values.csv', encoding='utf-8')
 
 # print(df1['Performance'].describe()) #PRINT------------PRINT--------------PRINT#
 # maxpf_daily = df1['Performance'].idxmax()
@@ -82,7 +82,7 @@ print(df_weeks)
 # print(df_weeks['Dividend']) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
-# df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
+df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
 
 # print(df_weeks['Performance'].describe()) #PRINT------------PRINT--------------PRINT#
 # maxpf_weekly = df_weeks['Performance'].idxmax()

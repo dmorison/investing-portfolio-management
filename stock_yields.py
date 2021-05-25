@@ -70,7 +70,7 @@ for indx, company in enumerate(tickers):
     df.set_index('Date', inplace=True)
     print(df.head())
     print(df.tail())
-    # df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
     Company_name = transactions.loc[transactions['Ticker'] == company, 'Company'].iloc[0]
     Company_shares = transactions.loc[transactions['Ticker'] == company, 'Quantity'].sum()
@@ -116,3 +116,5 @@ resultdf.set_index('Date', inplace=True)
 print(resultdf)
 
 resultdf.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+
+print("================ stock_yields script COMPLETE ================") #PRINT------------PRINT--------------PRINT#

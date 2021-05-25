@@ -290,7 +290,7 @@ Totals_df = Totals_df.assign(Annual_yield = Totals_df.apply(lambda x: timePeriod
 Totals_df = Totals_df.assign(ytd_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(0, x['Date'], x['Total_profit']), axis=1))
 Totals_df.drop(['Date'], axis=1, inplace=True)
 print(Totals_df)
-Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+# Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8') # download not used
 
 Weekly_yield = Totals_df['Weekly_yield'].iloc[-1]
 Monthly_yield = Totals_df['Monthly_yield'].iloc[-1]
