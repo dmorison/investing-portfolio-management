@@ -345,7 +345,7 @@ indices_percent_df.insert(loc=0, column='Year_week', value=indices_year_week_col
 indices_percent_weeks_df = indices_percent_df.groupby(indices_percent_df['Year_week']).tail(1)
 
 # merge the two weekly dataframes
-Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week")
+Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week") # probably should use how=left or how=outer
 # reset the index to the Date column values
 Totals_df_weeks.set_index('Date', inplace=True)
 Totals_df_weeks.drop(['Weekday'], axis=1, inplace=True)

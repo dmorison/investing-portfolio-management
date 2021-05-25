@@ -82,7 +82,7 @@ print(df_weeks)
 # print(df_weeks['Dividend']) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.tail(10)) #PRINT------------PRINT--------------PRINT#
 # print(df_weeks.info()) #PRINT------------PRINT--------------PRINT#
-df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
+# df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-8')
 
 # print(df_weeks['Performance'].describe()) #PRINT------------PRINT--------------PRINT#
 # maxpf_weekly = df_weeks['Performance'].idxmax()
@@ -90,8 +90,9 @@ df_weeks.to_csv('./portfolio_performance/weekly_unit_values.csv', encoding='utf-
 
 # Dividend calculations
 dv_df = dv_df.loc[dv_df['typeid'] == "dividend_dom"]
+dv_df.rename(columns={'value':'dividend'}, inplace=True)
 dv_df.drop('typeid', axis=1, inplace=True)
-# print(dv_df)
-# dv_df.to_csv('./portfolio_performance/company_dividend_payouts.csv', encoding='utf-8')
+print(dv_df)
+dv_df.to_csv('./portfolio_performance/company_dividend_payouts.csv', encoding='utf-8')
 
 print("================ unitValues script COMPLETE ================") #PRINT------------PRINT--------------PRINT#
