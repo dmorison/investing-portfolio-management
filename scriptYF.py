@@ -9,7 +9,7 @@ import numpy as np
 dave = "./Dave"
 ingwe = "./Ingwe"
 portfolio = ingwe
-offline = False
+offline = True
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
@@ -164,13 +164,6 @@ def build_company_datasets():
 	for x in range(1, len(company_transactions.index)):
 		build_data(x)
 
-# create arrays for the last values/day for each company can be appended to
-ticker_col = []
-company_col = []
-market_val_col = []
-cost_col = []
-profit_col = []
-yield_col = []
 # set the number of companies to use to 0
 num_companies = 0
 # initiate a variable that will become a dataframe made up of each companies cost and profit
@@ -213,35 +206,9 @@ for indx, symbl in enumerate(tickers):
 		pf = pf.join(pf_1, how="outer")
 		num_companies = num_companies + 1
 	
-	# append the last row/day values of the company to the appropriate array
-	# print(df.iloc[-1,:]) #PRINT------------PRINT--------------PRINT#
-	ticker_col.append(company_ticker)
-	company_col.append(company_name)
-	market_val_col.append(df['Market_value'].iloc[-1])
-	cost_col.append(df['Cost'].iloc[-1])
-	profit_col.append(df['Profit'].iloc[-1])
-	yield_col.append(df['Yield'].iloc[-1])
 	print("================ COMPANY COMPLETE ================") #PRINT------------PRINT--------------PRINT#
 
-# create a summary dataframe of all the arrays built up from each company
-summary_data = {'Ticker': ticker_col,
-				'Company': company_col,
-				'Market_value': market_val_col,
-				'Cost': cost_col,
-				'Profit': profit_col,
-				'Yield': yield_col}
-summary_df = pd.DataFrame(summary_data)
-summary_df = summary_df.set_index('Ticker')
-
-summary_cost = summary_df['Cost'].sum()
-summary_value = summary_df['Market_value'].sum()
-summary_profit = summary_value - summary_cost
-summary_yield = (summary_profit / summary_cost) * 100  # currently not being used
-
-summary_df = summary_df.assign(Portfolio_weighting = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
-print(summary_df)
-summary_df.to_csv(portfolio + '/portfolio_performance/portfolio_summary.csv', float_format='%.2f', encoding='utf-8')
-
+# now all companies added to pf dataframe calculate totals
 pf.fillna(method='ffill', inplace=True)
 print(pf.info()) #PRINT------------PRINT--------------PRINT#
 # initiate empty list variables for cost and column numbers
