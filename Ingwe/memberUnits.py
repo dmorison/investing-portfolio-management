@@ -70,7 +70,7 @@ print(member_totals) #PRINT------------PRINT--------------PRINT#
 memb_total_units = member_totals['Total_units'].sum()
 memb_cash_input = member_totals['Total_cash_input'].sum()
 memb_investment_value = member_totals['Total_value'].sum()
-member_totals.to_csv('./portfolio_performance/member_totals.csv', float_format='%.2f', encoding='utf-8')
+# member_totals.to_csv('./portfolio_performance/member_totals.csv', float_format='%.2f', encoding='utf-8')
 
 indx_col = ['unit_val', 'total_units', 'cash_balance', 'investment_value', 'nav']
 ttt_values = [ttt_unit_val, ttt_total_units, ttt_cash_balance, ttt_investment_value, ttt_nav]
@@ -79,6 +79,7 @@ calc_values = [calc_unit_val, calc_total_units, calc_cash_balance, calc_investme
 ttt_vs_calc_data = {'ttt': ttt_values,
                     'calc': calc_values}
 ttt_vs_calc_df = pd.DataFrame(ttt_vs_calc_data, index = indx_col)
+ttt_vs_calc_df.index.name = "variable"
 ttt_vs_calc_df = ttt_vs_calc_df.assign(Difference = ((ttt_vs_calc_df['calc'] - ttt_vs_calc_df['ttt']) / ttt_vs_calc_df['ttt']) * 100)
 print(ttt_vs_calc_df) #PRINT------------PRINT--------------PRINT#
 

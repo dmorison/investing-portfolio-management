@@ -296,8 +296,9 @@ Weekly_yield = Totals_df['Weekly_yield'].iloc[-1]
 Monthly_yield = Totals_df['Monthly_yield'].iloc[-1]
 Annual_yield = Totals_df['Annual_yield'].iloc[-1]
 ytd_yield = Totals_df['ytd_yield'].iloc[-1]
+Total_yield = Totals_df['Performance'].iloc[-1]
 
-performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["Year_to_date", ytd_yield]])
+performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["YTD", ytd_yield], ["Total", Total_yield]])
 performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
 print(performance_df)
 performance_df.to_csv(portfolio + '/portfolio_performance/summary_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8')
