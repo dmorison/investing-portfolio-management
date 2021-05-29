@@ -4,7 +4,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()
@@ -106,7 +106,10 @@ print(summary_df)
 dv_df = pd.read_csv(portfolio + '/portfolio_performance/company_dividend_payouts.csv', index_col='Date', parse_dates=True)
 
 dv_totals = dv_df.groupby(dv_df.symbol, as_index=False).agg({'dividend':'sum'})
-dv_totals['symbol'] = dv_totals['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+
+if portfolio == "./Ingwe":
+    dv_totals['symbol'] = dv_totals['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+
 print(dv_totals)
 
 resultdf = pd.merge(summary_df, dv_totals, how="outer", on="symbol")

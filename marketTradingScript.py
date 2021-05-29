@@ -12,11 +12,14 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 dividends = pd.read_csv(portfolio + '/portfolio_performance/company_dividend_payouts.csv', index_col='Date', parse_dates=True)
-dividends['symbol'] = dividends['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+
+if portfolio == "./Ingwe":
+    dividends['symbol'] = dividends['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+
 print(dividends) #PRINT------------PRINT--------------PRINT#
 
 tickers = transactions.Ticker.unique()
