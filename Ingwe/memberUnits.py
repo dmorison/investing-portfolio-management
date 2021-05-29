@@ -14,11 +14,11 @@ calc_cash_balance = unit_values['Cash_balance'].iloc[-1]
 calc_investment_value = unit_values['Investment_value'].iloc[-1]
 calc_nav = unit_values['NAV'].iloc[-1]
 
-ttt_date = pd.to_datetime("2021-05-22")
-ttt_unit_val = 1.241
+ttt_date = pd.to_datetime("2021-05-29")
+ttt_unit_val = 1.2877
 ttt_total_units = 19942.52
 ttt_cash_balance = 1559.18
-ttt_investment_value = 23189.64
+ttt_investment_value = 24120.63
 ttt_nav = ttt_cash_balance + ttt_investment_value
 
 unit_values = unit_values[['unit_val']]
@@ -70,7 +70,7 @@ print(member_totals) #PRINT------------PRINT--------------PRINT#
 memb_total_units = member_totals['Total_units'].sum()
 memb_cash_input = member_totals['Total_cash_input'].sum()
 memb_investment_value = member_totals['Total_value'].sum()
-# member_totals.to_csv('./portfolio_performance/member_totals.csv', float_format='%.2f', encoding='utf-8')
+member_totals.to_csv('./portfolio_performance/member_totals.csv', float_format='%.2f', encoding='utf-8')
 
 indx_col = ['unit_val', 'total_units', 'cash_balance', 'investment_value', 'nav']
 ttt_values = [ttt_unit_val, ttt_total_units, ttt_cash_balance, ttt_investment_value, ttt_nav]
