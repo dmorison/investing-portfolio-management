@@ -14,11 +14,11 @@ calc_cash_balance = unit_values['Cash_balance'].iloc[-1]
 calc_investment_value = unit_values['Investment_value'].iloc[-1]
 calc_nav = unit_values['NAV'].iloc[-1]
 
-ttt_date = pd.to_datetime("2021-05-22")
-ttt_unit_val = 1.241
+ttt_date = pd.to_datetime("2021-05-29")
+ttt_unit_val = 1.2877
 ttt_total_units = 19942.52
 ttt_cash_balance = 1559.18
-ttt_investment_value = 23189.64
+ttt_investment_value = 24120.63
 ttt_nav = ttt_cash_balance + ttt_investment_value
 
 unit_values = unit_values[['unit_val']]
@@ -79,6 +79,7 @@ calc_values = [calc_unit_val, calc_total_units, calc_cash_balance, calc_investme
 ttt_vs_calc_data = {'ttt': ttt_values,
                     'calc': calc_values}
 ttt_vs_calc_df = pd.DataFrame(ttt_vs_calc_data, index = indx_col)
+ttt_vs_calc_df.index.name = "variable"
 ttt_vs_calc_df = ttt_vs_calc_df.assign(Difference = ((ttt_vs_calc_df['calc'] - ttt_vs_calc_df['ttt']) / ttt_vs_calc_df['ttt']) * 100)
 print(ttt_vs_calc_df) #PRINT------------PRINT--------------PRINT#
 

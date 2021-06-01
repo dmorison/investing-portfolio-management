@@ -8,8 +8,8 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
-offline = True
+portfolio = dave
+offline = False
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])
 
@@ -290,14 +290,15 @@ Totals_df = Totals_df.assign(Annual_yield = Totals_df.apply(lambda x: timePeriod
 Totals_df = Totals_df.assign(ytd_yield = Totals_df.apply(lambda x: timePeriodYieldsFunc(0, x['Date'], x['Total_profit']), axis=1))
 Totals_df.drop(['Date'], axis=1, inplace=True)
 print(Totals_df)
-Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+# Totals_df.to_csv(portfolio + '/portfolio_performance/daily_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8') # download not used
 
 Weekly_yield = Totals_df['Weekly_yield'].iloc[-1]
 Monthly_yield = Totals_df['Monthly_yield'].iloc[-1]
 Annual_yield = Totals_df['Annual_yield'].iloc[-1]
 ytd_yield = Totals_df['ytd_yield'].iloc[-1]
+Total_yield = Totals_df['Performance'].iloc[-1]
 
-performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["Year_to_date", ytd_yield]])
+performance_data = np.array([["Week", Weekly_yield], ["Month", Monthly_yield], ["Annual", Annual_yield], ["YTD", ytd_yield], ["Total", Total_yield]])
 performance_df = pd.DataFrame(data=performance_data, columns=["Period", "Percent"])
 print(performance_df)
 performance_df.to_csv(portfolio + '/portfolio_performance/summary_portfolio_performance_yields.csv', float_format='%.2f', encoding='utf-8')
@@ -345,7 +346,7 @@ indices_percent_df.insert(loc=0, column='Year_week', value=indices_year_week_col
 indices_percent_weeks_df = indices_percent_df.groupby(indices_percent_df['Year_week']).tail(1)
 
 # merge the two weekly dataframes
-Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week")
+Totals_df_weeks = pd.merge(Totals_weeks_df, indices_percent_weeks_df, on="Year_week") # probably should use how=left or how=outer
 # reset the index to the Date column values
 Totals_df_weeks.set_index('Date', inplace=True)
 Totals_df_weeks.drop(['Weekday'], axis=1, inplace=True)

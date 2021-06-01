@@ -4,7 +4,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()
@@ -70,7 +70,7 @@ for indx, company in enumerate(tickers):
     df.set_index('Date', inplace=True)
     print(df.head())
     print(df.tail())
-    # df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
+    df.to_csv(portfolio + '/stock_performance_daily/' + company.split(':')[1] + '.csv', float_format='%.2f', encoding='utf-8')
 
     Company_name = transactions.loc[transactions['Ticker'] == company, 'Company'].iloc[0]
     Company_shares = transactions.loc[transactions['Ticker'] == company, 'Quantity'].sum()
@@ -98,5 +98,26 @@ summary_yield = (summary_profit / summary_cost) * 100  # not in use
 summary_df = summary_df.assign(Percent_of_portfolio = summary_df['Market_value'].map(lambda x: (x / summary_value) * 100))
 summary_df = summary_df.assign(Percent_of_total_return = summary_df['Profit'].map(lambda x: ((x / summary_profit) * 100) if x > 0 else np.nan))
 
+summary_df = summary_df.assign(symbol = summary_df['Ticker'].map(lambda x: x.split(':')[1]))
+summary_df.reset_index(inplace=True)
+
 print(summary_df)
-summary_df.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+
+dv_df = pd.read_csv(portfolio + '/portfolio_performance/company_dividend_payouts.csv', index_col='Date', parse_dates=True)
+
+dv_totals = dv_df.groupby(dv_df.symbol, as_index=False).agg({'dividend':'sum'})
+
+if portfolio == "./Ingwe":
+    dv_totals['symbol'] = dv_totals['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+
+print(dv_totals)
+
+resultdf = pd.merge(summary_df, dv_totals, how="outer", on="symbol")
+resultdf['dividend'].fillna(0, inplace=True)
+resultdf = resultdf.assign(dividend_yield = resultdf.apply(lambda x: x['dividend'] / x['Cost'], axis=1))
+resultdf.set_index('Date', inplace=True)
+print(resultdf)
+
+resultdf.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+
+print("================ stock_yields script COMPLETE ================") #PRINT------------PRINT--------------PRINT#

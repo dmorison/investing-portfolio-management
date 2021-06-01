@@ -2,10 +2,43 @@ import pandas as pd
 import numpy as np
 # import yfinance as yf
 
-market_data = pd.read_csv('./Ingwe/stock_performance_daily/CRST.csv', index_col=False, parse_dates=['Date'])
-print(market_data.tail(10))
-df = market_data['Profit'].iloc[-1]
-print(df)
+
+summary_df = pd.read_csv('./Ingwe/portfolio_performance/summary_stock_performance_yields-original.csv', index_col='Date', parse_dates=True)
+summary_df = summary_df.assign(symbol = summary_df['Ticker'].map(lambda x: x.split(':')[1]))
+summary_df.reset_index(inplace=True)
+# print(summary_df)
+
+dv_df = pd.read_csv('./Ingwe/portfolio_performance/company_dividend_payouts.csv', index_col='Date', parse_dates=True)
+
+dv_totals = dv_df.groupby(dv_df.symbol, as_index=False).agg({'dividend':'sum'})
+dv_totals['symbol'] = dv_totals['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+# print(dv_totals)
+
+resultdf = pd.merge(summary_df, dv_totals, how="outer", on="symbol")
+resultdf['dividend'].fillna(0, inplace=True)
+resultdf = resultdf.assign(dividend_yield = resultdf.apply(lambda x: x['dividend'] / x['Cost'], axis=1))
+
+resultdf.set_index('Date', inplace=True)
+
+print(resultdf)
+
+
+# dfs = dfs.assign(symbol = dfs['Ticker'].map(lambda x: x.split(':')[1]))
+# print(dfs)
+
+# dftotals = df.groupby(df.symbol, as_index=False).agg({'dividend':'sum'})
+# dftotals['symbol'] = dftotals['symbol'].map(lambda x: x.split(':')[1].split('.')[0])
+# print(dftotals)
+
+# dfr = pd.merge(dfs, dftotals, how="outer", on="symbol")
+# print(dfr)
+# dfr['dividend'].fillna(0, inplace=True)
+# print(dfr)
+
+# market_data = pd.read_csv('./Ingwe/stock_performance_daily/CRST.csv', index_col=False, parse_dates=['Date'])
+# print(market_data.tail(10))
+# df = market_data['Profit'].iloc[-1]
+# print(df)
 
 # def previousValuesFunction(days, date, val):
 #     global market_data
