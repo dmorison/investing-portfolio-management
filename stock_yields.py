@@ -115,6 +115,7 @@ print(dv_totals)
 resultdf = pd.merge(summary_df, dv_totals, how="outer", on="symbol")
 resultdf['dividend'].fillna(0, inplace=True)
 resultdf = resultdf.assign(dividend_yield = resultdf.apply(lambda x: x['dividend'] / x['Cost'], axis=1))
+resultdf = resultdf.assign(yield_inc_dividend = resultdf.apply(lambda x: (x['Profit'] + x['dividend']) / x['Cost'], axis=1))
 resultdf.set_index('Date', inplace=True)
 print(resultdf)
 
