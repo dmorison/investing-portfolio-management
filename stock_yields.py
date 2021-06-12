@@ -4,7 +4,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = dave
+portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()
@@ -117,13 +117,14 @@ resultdf['dividend'].fillna(0, inplace=True)
 resultdf = resultdf.assign(dividend_yield = resultdf.apply(lambda x: x['dividend'] / x['Cost'], axis=1))
 resultdf = resultdf.assign(yield_inc_dividend = resultdf.apply(lambda x: (x['Profit'] + x['dividend']) / x['Cost'], axis=1))
 
-types_df = pd.read_csv('./Dave/input_data/stock_types.csv')
+# only for dave!
+types_df = pd.read_csv(portfolio + '/input_data/stock_types.csv')
 types_df.drop(['Stock'], axis=1, inplace=True)
 dfall = pd.merge(resultdf, types_df, how="outer", on="Ticker")
 
-dfall.set_index('Date', inplace=True)
-print(dfall)
+resultdf.set_index('Date', inplace=True)
+print(resultdf)
 
-dfall.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+resultdf.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
 
 print("================ stock_yields script COMPLETE ================") #PRINT------------PRINT--------------PRINT#
