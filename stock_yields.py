@@ -4,7 +4,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()
@@ -122,9 +122,9 @@ types_df = pd.read_csv(portfolio + '/input_data/stock_types.csv')
 types_df.drop(['Stock'], axis=1, inplace=True)
 dfall = pd.merge(resultdf, types_df, how="outer", on="Ticker")
 
-resultdf.set_index('Date', inplace=True)
-print(resultdf)
+dfall.set_index('Date', inplace=True)
+print(dfall)
 
-resultdf.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
+dfall.to_csv(portfolio + '/portfolio_performance/summary_stock_performance_yields.csv', float_format='%.2f', encoding='utf-8')
 
 print("================ stock_yields script COMPLETE ================") #PRINT------------PRINT--------------PRINT#

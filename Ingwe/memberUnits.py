@@ -1,7 +1,7 @@
 import pandas as pd
 
 unit_values = pd.read_csv('./portfolio_performance/daily_unit_values.csv', index_col='Date', parse_dates=True)
-transactions = pd.read_csv('./input_data/member_transactions.csv', index_col='date', parse_dates=True)
+transactions = pd.read_csv('./input_data/member_subscriptions.csv', index_col='date', parse_dates=True)
 
 # print(transactions.head(20)) #PRINT------------PRINT--------------PRINT#
 print(unit_values.tail()) #PRINT------------PRINT--------------PRINT#
@@ -14,11 +14,11 @@ calc_cash_balance = unit_values['Cash_balance'].iloc[-1]
 calc_investment_value = unit_values['Investment_value'].iloc[-1]
 calc_nav = unit_values['NAV'].iloc[-1]
 
-ttt_date = pd.to_datetime("2021-06-12")
-ttt_unit_val = 1.2922
-ttt_total_units = 20233.93
-ttt_cash_balance = 1999.62
-ttt_investment_value = 24147.10
+ttt_date = pd.to_datetime("2021-07-03")
+ttt_unit_val = 1.2752
+ttt_total_units = 20469.96
+ttt_cash_balance = 984.60
+ttt_investment_value = 25119.65
 ttt_nav = ttt_cash_balance + ttt_investment_value
 
 unit_values = unit_values[['unit_val']]
