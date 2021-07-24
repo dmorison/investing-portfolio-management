@@ -7,3 +7,5 @@ stock_performance_weekly/
 input_data/
 
 email_weekly.html
+
+node_modules/
