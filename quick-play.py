@@ -1,14 +1,38 @@
 import pandas as pd
 import numpy as np
 # import yfinance as yf
-import requests
-from bs4 import BeautifulSoup
+# import requests
+# from bs4 import BeautifulSoup
 
-headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'}
-url = 'https://uk.finance.yahoo.com/quote/MONY.L'
-stock_url = 'https://query2.finance.yahoo.com/v10/finance/download/MONY.L?period1=1625097600&period2=1626912000&interval=1d&events=history&includeAdjustedClose=true'
-response = requests.get(stock_url)
-print(response.status_code)
+# return which market
+def market(x):
+	if x.split(':')[0] == "LON":
+		return "UK"
+	else:
+		return "US"
+
+# return company ticker to get Yahoo Finance market data
+def ticker(x):
+	if market(x) == "UK":
+		return x.split(':')[1] + ".L"
+	else:
+		return x.split(':')[1]
+
+transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', parse_dates=['Date'])
+tickers = transactions.Ticker.unique()
+arr = []
+for indx, symbl in enumerate(tickers):
+    # company_ticker = symbl.split(':')[1]
+    ts_Ticker = ticker(symbl) # get Yahoo Finance ticket/symbol for company
+    arr.append(ts_Ticker)
+
+print(arr)
+
+# headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'}
+# url = 'https://uk.finance.yahoo.com/quote/MONY.L'
+# stock_url = 'https://query2.finance.yahoo.com/v10/finance/download/MONY.L?period1=1625097600&period2=1626912000&interval=1d&events=history&includeAdjustedClose=true'
+# response = requests.get(stock_url)
+# print(response.status_code)
 
 # dv_df = pd.read_csv('./Dave/portfolio_performance/summary_stock_performance_yields.csv', index_col='Date', parse_dates=True)
 # types_df = pd.read_csv('./Dave/input_data/stock_types.csv')

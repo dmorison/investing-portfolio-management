@@ -9,3 +9,5 @@ input_data/
 email_weekly.html
 
 node_modules/
+data_feed/
+stockList.js
