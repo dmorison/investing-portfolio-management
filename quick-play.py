@@ -4,29 +4,41 @@ import numpy as np
 # import requests
 # from bs4 import BeautifulSoup
 
+index_symbls = ["GSPC", "FTSE", "FTMC", "FTAS", "GBPUSD=X"]
+index_names = ["SP500", "FTSE100", "FTSE250", "FTSE350", "GBPUSD"]
+
+for indx, symbl in enumerate(index_symbls):
+	index_name = index_names[indx]
+	patch = pd.read_csv('./data_fix/' + symbl + '.csv', index_col='Date', parse_dates=True)
+	market = pd.read_csv('./market_data/' + index_name + '.csv', index_col='Date', parse_dates=True)
+
+	updated_data = pd.concat([patch, market], sort=True)
+	updated_data.to_csv('./data_fix/' + index_name + '.csv', encoding='utf-8')
+
+
 # return which market
-def market(x):
-	if x.split(':')[0] == "LON":
-		return "UK"
-	else:
-		return "US"
+# def market(x):
+# 	if x.split(':')[0] == "LON":
+# 		return "UK"
+# 	else:
+# 		return "US"
 
-# return company ticker to get Yahoo Finance market data
-def ticker(x):
-	if market(x) == "UK":
-		return x.split(':')[1] + ".L"
-	else:
-		return x.split(':')[1]
+# # return company ticker to get Yahoo Finance market data
+# def ticker(x):
+# 	if market(x) == "UK":
+# 		return x.split(':')[1] + ".L"
+# 	else:
+# 		return x.split(':')[1]
 
-transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', parse_dates=['Date'])
-tickers = transactions.Ticker.unique()
-arr = []
-for indx, symbl in enumerate(tickers):
-    # company_ticker = symbl.split(':')[1]
-    ts_Ticker = ticker(symbl) # get Yahoo Finance ticket/symbol for company
-    arr.append(ts_Ticker)
+# transactions = pd.read_csv('./Ingwe/input_data/transactions.csv', parse_dates=['Date'])
+# tickers = transactions.Ticker.unique()
+# arr = []
+# for indx, symbl in enumerate(tickers):
+#     # company_ticker = symbl.split(':')[1]
+#     ts_Ticker = ticker(symbl) # get Yahoo Finance ticket/symbol for company
+#     arr.append(ts_Ticker)
 
-print(arr)
+# print(arr)
 
 # headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.164 Safari/537.36'}
 # url = 'https://uk.finance.yahoo.com/quote/MONY.L'

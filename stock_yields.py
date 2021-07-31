@@ -4,7 +4,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = dave
+portfolio = ingwe
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', index_col='Date', parse_dates=True)
 tickers = transactions.Ticker.unique()
