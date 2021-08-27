@@ -1,10 +1,14 @@
-#Script order:
+# First run update_market_data.py to check for new stocks
+# Script order:
 
+~~~~~~~~~~~~~~~~~~~~~~~~~
 cd Scraper
 node index.js
 cd ..
 
 update_market_data.py
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 scriptYF.py
 

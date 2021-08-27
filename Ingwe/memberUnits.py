@@ -14,11 +14,11 @@ calc_cash_balance = unit_values['Cash_balance'].iloc[-1]
 calc_investment_value = unit_values['Investment_value'].iloc[-1]
 calc_nav = unit_values['NAV'].iloc[-1]
 
-ttt_date = pd.to_datetime("2021-07-31")
-ttt_unit_val = 1.2298
-ttt_total_units = 20589.76
-ttt_cash_balance = 1149.08
-ttt_investment_value = 24171.64
+ttt_date = pd.to_datetime("2021-08-25")
+ttt_unit_val = 1.2259
+ttt_total_units = 20772.72
+ttt_cash_balance = 581.66
+ttt_investment_value = 24882.76
 ttt_nav = ttt_cash_balance + ttt_investment_value
 
 unit_values = unit_values[['unit_val']]

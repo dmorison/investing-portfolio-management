@@ -89,7 +89,9 @@ def get_company_data(xyz):
 	if market_data.empty:
 		exit(ts_Ticker + ": No data found, symbol may be delisted")
 	else:
-		df = market_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
+		ts_Date_loc = market_data.index.get_loc(ts_Date)  # get location of the transaction date in the market data
+		init_date_data = market_data.iloc[ts_Date_loc: , :]  # subset the market data to remove data prior to transaction date
+		df = init_date_data[['Close']]  # create dataframe with only close values from market dataframe (index = Date)
 	#====================================================#
 
 	df.to_csv(portfolio + '/stock_market_trading/' + company_ticker + '.csv', encoding='utf-8') # rename folder to stockmarket_vs_trading
