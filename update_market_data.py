@@ -34,7 +34,7 @@ if len(newStocks) > 0:
 
 print("There are no new stocks found")
 print("If there were new stocks make sure they exist in the newStocks array below (WITHOUT '.L' for UK stocks) before continuing:")
-newStocks = ['RIO', 'BATS', 'PLUS']
+newStocks = []
 print(newStocks) #PRINT------------PRINT--------------PRINT#
 reply = str(raw_input("Is the new stocks list correct AND you fetched the latest data (y/n)? ")).lower().strip()
 if reply[0] == 'n':

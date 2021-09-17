@@ -1,4 +1,5 @@
-# First run update_market_data.py to check for new stocks
+# First copy the stockList array from stockList.js into the update_market_data.py script AND make sure the newStocks arr (line 37) is empty
+# Then run update_market_data.py to check for new stocks
 # Script order:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~
