@@ -6,10 +6,13 @@ const stocklist = require('./stockList');
 const oneDay = 86400;
 const oneWeek = 604800;
 const oneMonth = 2629743;
+const twoMonth = 5270400;
+
 let endDate = Date.now();
-let startDate = endDate - oneMonth;
+let startDate = endDate - twoMonth;
 endDate = Math.floor(endDate/1000);
-startDate = endDate - oneMonth;
+startDate = endDate - twoMonth;
+
 console.log(startDate);
 console.log(endDate);
 

@@ -8,7 +8,7 @@ import numpy as np
 
 dave = "./Dave"
 ingwe = "./Ingwe"
-portfolio = ingwe
+portfolio = dave
 offline = True
 
 transactions = pd.read_csv(portfolio + '/input_data/transactions.csv', parse_dates=['Date'])

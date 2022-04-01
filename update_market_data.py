@@ -26,14 +26,14 @@ print(len(newStocks)) #PRINT------------PRINT--------------PRINT#
 if len(newStocks) > 0:
     print("=================================")
     print("EXITING SCRIPT - NEW STOCKS FOUND")
-    print("First add these to stockList array and stocks array in stockList.js (including the '.L' for UK stocks)")
+    print("First add these to stockList array and stocks array in stockList.js file ONLY (including the '.L' for UK stocks)")
     print(newStocks) #PRINT------------PRINT--------------PRINT#
-    print("Then copy them into newStocks array in the script below")
+    print("Then copy them into newStocks array in the update_market_data script below (without '.L' for UK stocks)")
     print("Then go back and fetch the latest data first before re-running this script")
     exit()
 
 print("There are no new stocks found")
-print("If there were new stocks make sure they exist in the newStocks array below (WITHOUT '.L' for UK stocks) before continuing:")
+print("If there were new stocks on the previous run of this script make sure they exist in the newStocks array below (WITHOUT '.L' for UK stocks) before continuing:")
 newStocks = []
 print(newStocks) #PRINT------------PRINT--------------PRINT#
 reply = str(raw_input("Is the new stocks list correct AND you fetched the latest data (y/n)? ")).lower().strip()
